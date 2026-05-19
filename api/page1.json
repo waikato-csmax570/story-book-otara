@@ -2,10 +2,10 @@
   "page_number": 1,
   "image": "images/page1.webp",
   "content": {
-  "mi": "<div class='cover-wrapper'><h3>Te Tahi-o-Te-Rā:</h3><h1>The Guardian of Ōtara</h1><p class='subtitle'>He pukapuka mā ngā tamariki i ahu mai i ngā pūrākau o Ngāti Ngahere</p><hr><p class='author'>Nā Te Kāhautu Maxwell</p><p class='reteller'>He kōrero anō mō ngā tamariki me ngā rangatahi</p></div>",
+    "mi": "<div class='cover-wrapper'><h3><span class='word' data-mi='Te Tahi-o-Te-Rā' data-en='The First Sun'>Te Tahi-o-Te-Rā</span>:</h3><h1><span class='word' data-mi='Kaitiaki' data-en='Guardian'>The Guardian</span> of <span class='word' data-mi='Ōtara' data-en='Ōtara'>Ōtara</span></h1><p class='subtitle'><span class='word' data-mi='He pukapuka' data-en='A book'>He pukapuka</span> <span class='word' data-mi='mā ngā tamariki' data-en='for children'>mā ngā tamariki</span></p><hr><p class='author'>Nā <span class='word' data-mi='Te Kāhautu Maxwell' data-en='Te Kāhautu Maxwell'>Te Kāhautu Maxwell</span></p></div>",
 
-  "en": "<div class='cover-wrapper'><h3>Te Tahi-o-Te-Rā:</h3><h1>The Guardian of Ōtara</h1><p class='subtitle'>A Children’s Book Inspired by the Pūrākau of Ngāti Ngahere</p><hr><p class='author'>By Te Kāhautu Maxwell</p><p class='reteller'>Retold in story form for children and young people</p></div>"
-},
+    "en": "<div class='cover-wrapper'><h3><span class='word' data-mi='Te Tahi-o-Te-Rā' data-en='The First Sun'>Te Tahi-o-Te-Rā</span>:</h3><h1><span class='word' data-mi='Kaitiaki' data-en='Guardian'>The Guardian</span> of <span class='word' data-mi='Ōtara' data-en='Ōtara'>Ōtara</span></h1><p class='subtitle'><span class='word' data-mi='He pukapuka' data-en=\"A children's book\">A Children's Book</span> <span class='word' data-mi='i ahu mai i ngā pūrākau' data-en='inspired by the pūrākau'>Inspired by the Pūrākau</span> <span class='word' data-mi='o Ngāti Ngahere' data-en='of Ngāti Ngahere'>of Ngāti Ngahere</span></p><hr><p class='author'>By <span class='word' data-mi='Te Kāhautu Maxwell' data-en='Te Kāhautu Maxwell'>Te Kāhautu Maxwell</span></p><p class='reteller'><span class='word' data-mi='He kōrero anō' data-en='Retold story'>Retold in story form</span> <span class='word' data-mi='mō ngā tamariki me ngā rangatahi' data-en='for children and young people'>for children and young people</span></p></div>"
+  },
   "next_page": "api/page2.json",
   "previous_page": null
 }

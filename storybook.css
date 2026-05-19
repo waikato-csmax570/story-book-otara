@@ -296,6 +296,39 @@ body {
   cursor: pointer;
 }
 
+.word {
+  position: relative;
+  cursor: pointer;
+  color: #8B4513;
+  font-weight: bold;
+}
+
+.word::after {
+  content: attr(data-mi) " / " attr(data-en);
+  position: absolute;
+  bottom: 130%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #222;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 0.75em;
+  white-space: nowrap;
+  opacity: 0;
+  transition: 0.2s;
+  pointer-events: none;
+}
+
+.word:hover::after {
+  opacity: 1;
+}
+
+.word.active {
+  background: #ffe4c4;
+  border-radius: 3px;
+}
+
 /* ============================
    Mobile Responsive Layout (DISABLED — all blocks commented out)
    ============================ */

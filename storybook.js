@@ -50,7 +50,7 @@ window.addEventListener("load", function () {
 
     document.querySelector("#current-page").innerText = currentPageInfo.page_number;
 
-     let rightPageDiv = document.querySelector("#page-right");
+    let rightPageDiv = document.querySelector("#page-right");
     rightPageDiv.innerHTML = currentPageInfo.content[currentLanguage];
 
     let imgElement = document.createElement("img");
@@ -71,8 +71,32 @@ window.addEventListener("load", function () {
 
     document.querySelector("#page-select").selectedIndex =
     currentPageInfo.page_number - 1;
+
+    enableWordFeatures();
   }
 
+  function enableWordFeatures() {
+  const words = document.querySelectorAll(".word");
+
+  words.forEach(word => {
+    word.addEventListener("click", (event) => {
+      event.stopPropagation();
+
+      const text = word.textContent.trim();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+
+      if (currentLanguage === "mi") {
+        utterance.lang = "mi-NZ";
+      } else {
+        utterance.lang = "en-US";
+      }
+
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utterance);
+    });
+  });
+}
   function previous_page() {
     if (currentPageInfo.previous_page) {
       animateAndLoad("prev");
@@ -168,6 +192,9 @@ document.querySelector("#language-toggle").addEventListener("change", (e) => {
   updatePageDisplay();
 });
 
+
+word.classList.add("active");
+setTimeout(() => word.classList.remove("active"), 300);
 
 
 });
