@@ -53,11 +53,35 @@ window.addEventListener("load", function () {
     let rightPageDiv = document.querySelector("#page-right");
     rightPageDiv.innerHTML = currentPageInfo.content[currentLanguage];
 
-    let imgElement = document.createElement("img");
-    imgElement.src = currentPageInfo.image;
     let leftPageDiv = document.querySelector("#page-left");
-    leftPageDiv.innerHTML = "";
-    leftPageDiv.appendChild(imgElement);
+leftPageDiv.innerHTML = "";
+
+if (currentPageInfo.image.endsWith(".mp4")) {
+
+  const video = document.createElement("video");
+  video.src = currentPageInfo.image;
+  video.autoplay = true;
+  video.loop = true;
+  video.muted = true;
+  video.playsInline = true;
+
+  video.style.width = "100%";
+  video.style.height = "100%";
+  
+video.style.objectFit = "contain";
+// video.style.backgroundColor = "black"; 
+
+
+  leftPageDiv.appendChild(video);
+
+} else {
+
+  // fallback kalau masih gambar
+  const imgElement = document.createElement("img");
+  imgElement.src = currentPageInfo.image;
+
+  leftPageDiv.appendChild(imgElement);
+}
 
     updateCursor();
 
