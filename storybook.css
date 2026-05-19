@@ -329,6 +329,53 @@ body {
   border-radius: 3px;
 }
 
+.word-bank, .drop-zone {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+  justify-content: center;
+}
+
+.puzzle-word {
+  padding: 8px 12px;
+  background: sandybrown;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.drop-zone {
+  min-height: 50px;
+  border: 2px dashed #aaa;
+  padding: 10px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;       /* ✅ pakai viewport */
+  height: 100vh;      /* ✅ pakai viewport */
+  background: rgba(0,0,0,0.7);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+}
+
+.puzzle-box {
+  background: ivory;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  width: 320px;
+
+  position: relative; /* ✅ penting */
+}
+
 /* ============================
    Mobile Responsive Layout (DISABLED — all blocks commented out)
    ============================ */

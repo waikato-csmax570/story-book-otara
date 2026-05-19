@@ -192,9 +192,62 @@ document.querySelector("#language-toggle").addEventListener("change", (e) => {
   updatePageDisplay();
 });
 
+function initPuzzle() {
+  const overlay = document.getElementById("puzzle-overlay");
+  const bank = document.getElementById("word-bank");
+  const zone = document.getElementById("drop-zone");
+  const checkBtn = document.getElementById("check-btn");
+  const skipBtn = document.getElementById("skip-btn");
+  const feedback = document.getElementById("puzzle-feedback");
 
-word.classList.add("active");
-setTimeout(() => word.classList.remove("active"), 300);
+  const correctSentence = ["Te", "Tahi-o-Te-Rā", "is", "the", "guardian"];
 
+  const shuffled = [...correctSentence].sort(() => Math.random() - 0.5);
+
+  shuffled.forEach(word => {
+    const span = document.createElement("div");
+    span.className = "puzzle-word";
+    span.innerText = word;
+
+    span.addEventListener("click", () => {
+      zone.appendChild(span);
+    });
+
+    bank.appendChild(span);
+  });
+
+  zone.addEventListener("click", (e) => {
+    if (e.target.classList.contains("puzzle-word")) {
+      bank.appendChild(e.target);
+    }
+  });
+
+  checkBtn.addEventListener("click", () => {
+    const userAnswer = [...zone.children].map(el => el.innerText);
+
+    if (JSON.stringify(userAnswer) === JSON.stringify(correctSentence)) {
+      feedback.innerText = "✅ Correct!";
+      feedback.style.color = "green";
+
+      setTimeout(() => {
+        overlay.style.display = "none";
+      }, 800);
+    } else {
+      feedback.innerText = "❌ Try again!";
+      feedback.style.color = "red";
+    }
+  });
+
+  skipBtn.addEventListener("click", () => {
+    overlay.style.display = "none";
+  });
+}
+
+
+
+
+setTimeout(() => {
+  initPuzzle();
+}, 100);
 
 });
