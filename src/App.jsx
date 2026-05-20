@@ -1083,16 +1083,27 @@ function BgmPlayer({ tracks = [] }) {
   const src = tracks[trackIndex] ? publicUrl(tracks[trackIndex]) : "";
 
   useEffect(() => {
-    if (playing) audioRef.current?.play().catch(() => setPlaying(false));
-  }, [playing, src]);
+  const audio = audioRef.current;
+  if (!audio) return;
 
-  useEffect(() => {
-    const resume = () => {
-      if (playing) audioRef.current?.play().catch(() => {});
-    };
-    document.addEventListener("click", resume, { once: true });
-    return () => document.removeEventListener("click", resume);
-  }, [playing]);
+  if (playing) {
+    audio.play().catch(() => setPlaying(false));
+  } else {
+    audio.pause();
+  }
+}, [playing]);
+
+useEffect(() => {
+  const audio = audioRef.current;
+  if (!audio) return;
+
+  audio.pause();
+  audio.load();
+
+  if (playing) {
+    audio.play().catch(() => setPlaying(false));
+  }
+}, [src]);
 
   return (
     <div className="bgm-player">
@@ -1107,7 +1118,7 @@ function BgmPlayer({ tracks = [] }) {
 
 function PuzzleOverlay() {
   const [visible, setVisible] = useState(false);
-  const [bank, setBank] = useState(["Te", "Tahi-o-Te-Ra", "is", "the", "guardian"].sort(() => Math.random() - 0.5));
+  const [bank, setBank] = useState(["Te", "Tahi-o-Te-Rā", "is", "the", "guardian"].sort(() => Math.random() - 0.5));
   const [answer, setAnswer] = useState([]);
   const solved = answer.join(" ") === "Te Tahi-o-Te-Rā is the guardian";
 
