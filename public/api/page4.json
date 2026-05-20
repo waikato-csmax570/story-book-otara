@@ -1,0 +1,11 @@
+{
+  "page_number": 4,
+  "image": "images/page4.webp",
+  "content": {
+    "mi": "<div class='story-page'><h2>Te Whakapapa o Te Tahi</h2><p><strong>Te Tahi-o-Te-Rā</strong> ehara i te mea he tangata noa.</p><p>He <i>mokopuna</i> ia nō <strong>Toroa</strong>, te <i>rangatira</i> nui o te waka o Mātaatua, ā, he tama nā <strong>Ruaihona</strong>.</p><p>I tipu ake ia hei <i>tohunga</i> kaha rawa atu —</p><div class='attributes'><span>He kaiwhakaora...</span><span>He kaitiaki...</span><span>Ā, i ētahi wā… he mea whakamataku.</span></div></div>",
+
+    "en": "<div class='story-page'><h2>Te Tahi’s Lineage</h2><p><strong>Te Tahi-o-Te-Rā</strong> was no ordinary being.</p><p>He was a <i>mokopuna</i> of <strong>Toroa</strong>, the great <i>rangatira</i> of the Mātaatua waka, and the son of <strong>Ruaihona</strong>.</p><p>He grew to become a <i>tohunga</i> of immense power—</p><div class='attributes'><span>A healer...</span><span>A protector...</span><span>And sometimes… someone to fear.</span></div></div>"
+  },
+  "next_page": "api/page5.json",
+  "previous_page": "api/page3.json"
+}

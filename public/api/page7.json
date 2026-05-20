@@ -1,0 +1,11 @@
+{
+  "page_number": 7,
+  "image": "images/page7.webp",
+  "content": {
+    "mi": "<div class='story-page'><h2>Te Haerenga ki Whakaari</h2><p>I tētahi rā raumati, ka whakarite te <i>iwi</i> ki te haere ki <strong>Whakaari</strong>, te motu o ngā pari auahi me ngā <i>tītī</i> e whakatipu ana.</p><p>Ka utaia ā rātou <i>waka</i> ki te <i>kai</i> me te wai utu nui, ā, ka tono rātou i a Te Tahi kia haere tahi — hei ārahi i ngā <i>karakia</i> kia nui ai te hauhake.</p><div class='trust-moment'><p>Ka whakapono ia ki a rātou,</p><h3>ā, ka whakaae.</h3></div></div>",
+
+    "en": "<div class='story-page'><h2>The Journey to Whakaari</h2><p>One summer day, the <i>iwi</i> prepared to travel to <strong>Whakaari</strong>, the island of steaming cliffs and nesting <i>tītī</i>.</p><p>They loaded their <i>waka</i> with <i>kai</i> and precious water, and then they invited Te Tahi to join them—to lead the <i>karakia</i> for a plentiful harvest.</p><div class='trust-moment'><p>Trusting them,</p><h3>he accepted.</h3></div></div>"
+  },
+  "next_page": "api/page8.json",
+  "previous_page": "api/page6.json"
+}

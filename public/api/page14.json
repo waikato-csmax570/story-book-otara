@@ -1,0 +1,11 @@
+{
+  "page_number": 14,
+  "image": "images/page14.webp",
+  "content": {
+    "mi": "<div class='back-cover-wrapper'><h1>Kua Mutu</h1><p>Te Mutunga</p><hr><p class='blurb'>He kōrero mō te mana, te tinihanga, me te kaha o te murunga hara.</p><button onclick='location.reload()'>Pānui Anō</button></div>",
+
+    "en": "<div class='back-cover-wrapper'><h1>Kua Mutu</h1><p>The End</p><hr><p class='blurb'>A story of mana, betrayal, and the enduring power of forgiveness.</p><button onclick='location.reload()'>Read Again</button></div>"
+  },
+  "next_page": null,
+  "previous_page": "api/page13.json"
+}

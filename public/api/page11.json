@@ -1,0 +1,11 @@
+{
+  "page_number": 11,
+  "image": "images/page11.webp",
+  "content": {
+    "mi": "<div class='story-page'><h2>Te Akoranga Kore Kupu</h2><p>I te hokinga mai o Te Tahi, i reira tonu tōna iwi.</p><p>I titiro ngā tāne ki a ia me ngā kanohi whānui, kāore he kupu, engari kua kī ngā ngākau i te whakamā.</p><div class='patience-box'><p>Kāore a Te Tahi i riri.</p><p>Kāore ia i whiua.</p><p>Ka kī noa ia:</p></div><div class='proverb-box'><h3>“Waiho mā te whakamā e patu.”</h3><p class='translation'>Let shame be the punishment.</p></div><p>Ā, ka mārama te iwi.</p></div>",
+
+    "en": "<div class='story-page'><h2>The Unspoken Lesson</h2><p>When Te Tahi returned home, his people were there.</p><p>The men looked at him with wide eyes, their mouths silent, their hearts shamed.</p><div class='patience-box'><p>Te Tahi did not shout.</p><p>He did not punish.</p><p>He simply said:</p></div><div class='proverb-box'><h3>“Waiho mā te whakamā e patu.”</h3><p class='translation'>Let shame be the punishment.</p></div><p>And the people understood.</p></div>"
+  },
+  "next_page": "api/page12.json",
+  "previous_page": "api/page10.json"
+}

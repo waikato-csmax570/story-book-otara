@@ -1,0 +1,11 @@
+{
+  "page_number": 9,
+  "image": "images/page9.webp",
+  "content": {
+    "mi": "<div class='story-page'><h2>Te Karanga ki te Moana</h2><p>E tū mokemoke ana ia i te tahatika, ka hiki a Te Tahi i ōna ringa ki te rangi.</p><p>Ka karanga ia ki a <strong>Tangaroa</strong>, ki ngā <i>taniwha</i> o te hōhonu, ki ngā mea tawhito o te moana.</p><div class='thunder-text'><p>I rere tōna reo i runga i ngā ngaru pēnei i te whatitiri.</p></div><p>Ā, i te pōuriuri o te moana ka ara ake tētahi mea nui—</p><div class='whale-arrival'><h3>Tūtarakauika</h3><p>te rangatira o ngā tohorā</p></div></div>",
+
+    "en": "<div class='story-page'><h2>Calling the Sea</h2><p>Standing alone on the shore, Te Tahi lifted his hands to the sky.</p><p>He called upon <strong>Tangaroa</strong>, upon the <i>taniwha</i> of the deep, upon the ancient creatures of the ocean.</p><div class='thunder-text'><p>His voice rolled across the waves like thunder.</p></div><p>And from the darkness of the sea rose a mighty figure—</p><div class='whale-arrival'><h3>Tūtarakauika</h3><p>the chief of whales</p></div></div>"
+  },
+  "next_page": "api/page10.json",
+  "previous_page": "api/page8.json"
+}

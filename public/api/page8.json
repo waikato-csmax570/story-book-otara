@@ -1,0 +1,11 @@
+{
+  "page_number": 8,
+  "image": "images/page8.webp",
+  "content": {
+    "mi": "<div class='story-page'><h2>Kua Waihotia</h2><p>I Whakaari, ka oti i a Te Tahi ngā kawa.</p><p>I marara te iwi huri noa i te motu ki te kohi <i>tītī</i>, ā, ka whakatā te <i>tohunga</i> kaumātua i raro i te rā mahana.</p><p>Engari, i tana oho ake…</p><div class='silence-box'><p>kāore he tangata.</p><p>Kāore he <i>waka</i>.</p><p>Kāore he reo.</p><p>Kāore ngā tāngata i whakawhirinaki ai ia.</p></div><h3>Katoa kua ngaro.</h3><p class='abandoned-text'>Kua whakarerea a Te Tahi-o-Te-Rā.</p></div>",
+
+    "en": "<div class='story-page'><h2>Left Alone</h2><p>On Whakaari, Te Tahi completed the rituals.</p><p>The people scattered across the island to gather <i>tītī</i>, while the old <i>tohunga</i> rested in the warm sun.</p><p>But when he awoke…</p><div class='silence-box'><p>everyone was gone.</p><p>The <i>waka</i>.</p><p>The voices.</p><p>The people he trusted.</p></div><h3>All of them.</h3><p class='abandoned-text'>Te Tahi-o-Te-Rā had been abandoned.</p></div>"
+  },
+  "next_page": "api/page9.json",
+  "previous_page": "api/page7.json"
+}

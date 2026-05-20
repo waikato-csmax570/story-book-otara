@@ -1,0 +1,11 @@
+{
+  "page_number": 12,
+  "image": "images/page12.webp",
+  "content": {
+    "mi": "<div class='story-page'><h2>Te Kaitiaki o te Moana</h2><p>I te wā i wehe atu ai a Te Tahi-o-Te-Rā i tēnei ao, ka hoki tōna <i>wairua</i> ki te moana.</p><p>I reira ka huri ia hei <strong>taniwha</strong>—</p><div class='transformation-box'><p>hei <i>marakihau</i>,</p><p>hei kaitiaki mō ngā wai hōhonu.</p></div><p>Kei Ōtara tōna kāinga, kei roto i tana ana i raro i te wai, ā, ka huri haere ia i te whānui o <strong>Moana-a-Toi</strong>.</p></div>",
+
+    "en": "<div class='story-page'><h2>Becoming the Guardian of the Sea</h2><p>When Te Tahi-o-Te-Rā eventually left this world, his <i>wairua</i> returned to the ocean.</p><p>There he transformed into a <strong>taniwha</strong>—</p><div class='transformation-box'><p>a <i>marakihau</i>,</p><p>a guardian of the deep waters.</p></div><p>His home is in Ōtara, in his underwater cave, and he travels the vast <strong>Moana-a-Toi</strong>.</p></div>"
+  },
+  "next_page": "api/page13.json",
+  "previous_page": "api/page11.json"
+}

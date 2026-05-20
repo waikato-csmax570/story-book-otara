@@ -1,0 +1,23 @@
+{
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "lint": "eslint src --ext .js,.jsx"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "framer-motion": "^12.39.0",
+    "gsap": "^3.15.0",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-jigsaw-puzzle": "^1.0.5",
+    "vite": "latest"
+  },
+  "devDependencies": {
+    "eslint": "latest",
+    "eslint-plugin-react-hooks": "latest",
+    "eslint-plugin-react-refresh": "latest",
+    "globals": "latest"
+  }
+}

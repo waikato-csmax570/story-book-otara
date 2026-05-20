@@ -1,0 +1,11 @@
+{
+  "page_number": 5,
+  "image": "images/page5.webp",
+  "content": {
+    "mi": "<div class='story-page'><h2>Te Toka Tapu</h2><p>Kei te taha o tōna kāinga tētahi toka teitei, koi hoki, e tū ana i runga ake i te wai pēnei i tētahi kaitiaki e mātaki ana i te raorao.</p><p>Ko <strong>Te Toka-a-Houmea</strong> tēnei.</p><p>I tipu te <i>harakeke</i> i ōna taha, he mea whakatapua e ngā kawa a Te Tahi.</p><div class='sacred-list'><p>I konei ia i karakia ai,</p><p>i konei ia i tuku ai i āna inoi ki ngā <i>atua</i> tawhito,</p><p>i konei ia i kawe ai i te kaha o tōna <i>mana</i>.</p></div></div>",
+
+    "en": "<div class='story-page'><h2>The Sacred Rock</h2><p>Near his home stood a tall and jagged rock, rising high above the water like a guardian watching over the valley.</p><p>This was <strong>Te Toka-a-Houmea</strong>.</p><p><i>Harakeke</i> grew from its sides, made sacred by Te Tahi’s rituals.</p><div class='sacred-list'><p>It was here he performed <i>karakia</i>,</p><p>here he offered prayers to ancient <i>atua</i>,</p><p>here he held the weight of his <i>mana</i>.</p></div></div>"
+  },
+  "next_page": "api/page6.json",
+  "previous_page": "api/page4.json"
+}

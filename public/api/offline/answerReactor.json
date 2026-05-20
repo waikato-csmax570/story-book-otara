@@ -1,0 +1,18 @@
+{
+  "page_1_correct": {
+    "emotion": "excited",
+    "text": "YES! You got it! Te Tahi-o-Te-Rā really is the protector! 🌟"
+  },
+  "page_1_incorrect": {
+    "emotion": "encouraging",
+    "text": "Good try! Let's learn more about Te Tahi-o-Te-Rā's real role! 💪"
+  },
+  "page_2_correct": {
+    "emotion": "thrilled",
+    "text": "Perfect! The village unity is beautiful! 🎉"
+  },
+  "page_2_incorrect": {
+    "emotion": "supportive",
+    "text": "Great effort! Every answer helps us understand the story better! 📖"
+  }
+}

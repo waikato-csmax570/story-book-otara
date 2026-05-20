@@ -1,0 +1,11 @@
+{
+  "page_number": 6,
+  "image": "images/page6.webp",
+  "content": {
+    "mi": "<div class='story-page'><h2>Te Mataku o te Iwi</h2><p>I a Te Tahi e pakeke haere ana, ka kaha ake tōna <i>mana</i>.</p><p>Ā, i ētahi wā, ina kāore te tangata e mārama ki te kaha nui, <strong>ka tupu hoki te mataku.</strong></p><div class='whisper-box'><p>Ka tū ngā hui ngū.</p><p>Ka rere ngā kōrero huna i te pō.</p></div><p>Ā tōna wā, ka tae te iwi ki tētahi whakatau uaua…</p><p class='cliffhanger'>Me waiho a Te Tahi ki muri.</p></div>",
+
+    "en": "<div class='story-page'><h2>Fear Among His People</h2><p>But as Te Tahi grew older, his <i>mana</i> grew even stronger.</p><p>And sometimes, when people do not understand great power, <strong>fear begins to grow too.</strong></p><div class='whisper-box'><p>Quiet meetings were held.</p><p>Whispers travelled in the night.</p></div><p>Until the people reached a hard decision…</p><p class='cliffhanger'>They must leave Te Tahi behind.</p></div>"
+  },
+  "next_page": "api/page7.json",
+  "previous_page": "api/page5.json"
+}

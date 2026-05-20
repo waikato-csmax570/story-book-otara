@@ -1,69 +1,12 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Te Tahi-o-Te-Rā</title>
-    <link rel="stylesheet" href="storybook.css">
-    <link rel="stylesheet" href="sprite/sprite.css">
-    <script type="text/javascript" src="storybook.js"></script>
-    <script type="text/javascript" src="sprite/config.js"></script>
-    <script type="text/javascript" src="sprite/storage.js"></script>
-    <script type="text/javascript" src="sprite/agents.js"></script>
-    <script type="text/javascript" src="sprite/llm-client.js"></script>
-    <script type="text/javascript" src="sprite/sprite.js"></script>
-    <script type="text/javascript" src="sprite/buddy.js"></script>
-
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Te Tahi-o-Te-Ra Digital Reader</title>
   </head>
   <body>
-      <div class="grid-container">
-      <div class="header"><h1>Te Tahi-o-Te-Rā: The Guardian of Ōtara</h1>
-
-          <div class="language-switch">
-            <select id="language-toggle">
-              <option value="mi">Māori</option>
-              <option value="en">English</option>
-            </select>
-          </div>
-      </div>
-
-      <div id="page-left" class="page">
-        <p>Images here</p>
-      </div>
-
-      <div id="page-right" class="page">
-        <h1>Page Text Here</h1>
-      </div>
-
-      <div id="turn-left" class="control"></div>
-      <div id="turn-right" class="control"></div>
-
-      <div class="footer">
-        <p>Page &nbsp;<span id="current-page">?</span> / <span
-          id="total-page">?</span></p>
-        
-        <div class="page-jump">
-            <select id="page-select"></select>
-          </div>
-
-      </div>
-    </div>
-    <div id="puzzle-overlay" class="overlay">
-  <div class="puzzle-box">
-    <h2>🧩 Arrange the sentence</h2>
-    <p>Build the correct sentence about the story</p>
-
-    <div id="drop-zone" class="drop-zone"></div>
-
-    <div id="word-bank" class="word-bank"></div>
-
-    <p id="puzzle-feedback"></p>
-
-    <button id="check-btn">Check</button>
-    <button id="skip-btn">Skip</button>
-  </div>
-</div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
-  
-
 </html>

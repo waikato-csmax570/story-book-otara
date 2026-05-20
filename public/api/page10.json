@@ -1,0 +1,11 @@
+{
+  "page_number": 10,
+  "image": "images/page10.webp",
+  "content": {
+    "mi": "<div class='story-page'><h2>Te Hokinga Nui</h2><p>Ka tere mai a Tūtarakauika ki te tai, ka pakaru tōna tinana nui i te ngaru.</p><p>Ka piki a Te Tahi ki runga i tōna tuara.</p><p>Mā te kaha o tana hiku, ka anga te tohorā nui ki <strong>Whakatāne</strong>.</p><div class='speed-box'><p>He tere rawa tā rātou haere—</p><p class='fast'>ka koropupū te moana i muri i a rātou</p></div><p>…ā, ka kitea ngā <i>waka</i> whero e mānu atu ana i tawhiti.</p></div>",
+
+    "en": "<div class='story-page'><h2>The Great Journey Home</h2><p>Tūtarakauika glided toward the shore, his massive body breaking through the waves.</p><p>Te Tahi climbed onto his back.</p><p>With a powerful sweep of his tail, the great whale turned toward <strong>Whakatāne</strong>.</p><div class='speed-box'><p>They travelled fast—</p><p class='fast'>so fast that the sea frothed behind them</p></div><p>...and the red hulls of the people’s <i>waka</i> could be seen drifting far in the distance.</p></div>"
+  },
+  "next_page": "api/page11.json",
+  "previous_page": "api/page9.json"
+}

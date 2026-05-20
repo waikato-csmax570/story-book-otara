@@ -1,0 +1,11 @@
+{
+  "page_number": 13,
+  "image": "images/page13.webp",
+  "content": {
+    "mi": "<div class='story-page'><h2>Te Tahi i ēnei Rā</h2><p>Ahakoa i ēnei rā, ka kī tonu te iwi:</p><div class='legend-box'><p>Mēnā ka ngaro tētahi o āna uri i te moana,</p><p>mēnā ka kaha rawa ngā ngaru,</p><p>mēnā ka tata mai te mōrearea—</p></div><p><strong>Ka tae mai a Te Tahi</strong>, rānei <strong>a Tūtarakauika</strong>.</p><p>Ka hiki ake rātou i te tangata i te moana, ka whakahoki ora ki uta, ā, ka tiaki pēnei i ngā rā o mua.</p></div>",
+
+    "en": "<div class='story-page'><h2>Te Tahi Today</h2><p>Even today, the people say:</p><div class='legend-box'><p>If one of his descendants is lost at sea,</p><p>if the waves grow rough,</p><p>if danger approaches—</p></div><p><strong>Te Tahi</strong> or <strong>Tūtarakauika</strong> will come.</p><p>They will lift the person from the ocean, carry them safely to shore, and protect them just as they once protected the <i>tohunga</i> of old.</p></div>"
+  },
+  "next_page": "api/page14.json",
+  "previous_page": "api/page12.json"
+}

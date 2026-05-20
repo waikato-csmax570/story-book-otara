@@ -1,0 +1,10 @@
+{
+  "page_1": {
+    "answers": ["Protects the valley", "Watches over the people", "Guards the treasures"],
+    "correctIndex": 0
+  },
+  "page_2": {
+    "answers": ["They escape together", "The village helps them", "They find a new home"],
+    "correctIndex": 1
+  }
+}
