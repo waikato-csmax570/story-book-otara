@@ -132,7 +132,7 @@ export async function loadDefaultBook() {
 
   return {
     id: "te-tahi-o-te-ra",
-    title: "Te Tahi-o-Te-Ra",
+    title: "Te Tahi-o-Te-Rā",
     subtitle: "The Guardian of Otara",
     author: "Te Kahautu Maxwell",
     pages,

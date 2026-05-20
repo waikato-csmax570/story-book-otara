@@ -154,7 +154,7 @@ function LoginPage({ onLogin }) {
         <div className="ambient-ring two" />
         <div className="brand-mark">TR</div>
         <p className="eyebrow">Digital story studio</p>
-        <h1>Te Tahi-o-Te-Ra</h1>
+        <h1>Te Tahi-o-Te-Rā</h1>
         <p>Teachers shape interactive books. Students read, listen, answer, and learn with Kiri and Moko.</p>
       </section>
       <motion.form className="login-panel" onSubmit={submit} layout>
@@ -437,7 +437,7 @@ function ContentTab({ book, page, updateBook, updatePage }) {
             <button onClick={dictionaryTranslate}>Dictionary Translate</button>
             <button onClick={aiTranslate}><Sparkles size={16} /> AI Translate</button>
           </div>
-          <label>Maori Story Text<textarea rows="5" value={page.content.mi} onChange={(e) => updatePage({ content: { ...page.content, mi: e.target.value } })} /></label>
+          <label>Māori Story Text<textarea rows="5" value={page.content.mi} onChange={(e) => updatePage({ content: { ...page.content, mi: e.target.value } })} /></label>
           <div className="puzzle-settings">
             <label className="check"><input type="checkbox" disabled={!hasPuzzleMedia} checked={hasPuzzleMedia && (page.puzzle?.enabled || false)} onChange={(e) => updatePage({ puzzle: { ...(page.puzzle || {}), enabled: e.target.checked } })} /> Require image puzzle before this page</label>
             <label>Rows<input type="number" min="2" max="6" value={page.puzzle?.rows || 3} onChange={(e) => updatePage({ puzzle: { ...(page.puzzle || {}), rows: Number(e.target.value) } })} /></label>
@@ -668,7 +668,7 @@ function StudentReader({ book, books, setBook, onLogout, onTeacher, canEdit }) {
           }}>
             {[book, ...publishedBooks.filter((item) => item.id !== book.id)].map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
           </select>
-          <select value={language} onChange={(e) => setLanguage(e.target.value)}><option value="en">English</option><option value="mi">Maori</option></select>
+          <select value={language} onChange={(e) => setLanguage(e.target.value)}><option value="en">English</option><option value="mi">Māori</option></select>
           {canEdit && <button onClick={onTeacher}>Editor</button>}
           <button onClick={onLogout}><LogOut size={16} /> Logout</button>
         </div>
@@ -1109,7 +1109,7 @@ function PuzzleOverlay() {
   const [visible, setVisible] = useState(false);
   const [bank, setBank] = useState(["Te", "Tahi-o-Te-Ra", "is", "the", "guardian"].sort(() => Math.random() - 0.5));
   const [answer, setAnswer] = useState([]);
-  const solved = answer.join(" ") === "Te Tahi-o-Te-Ra is the guardian";
+  const solved = answer.join(" ") === "Te Tahi-o-Te-Rā is the guardian";
 
   if (!visible) return <button className="puzzle-launch" onClick={() => setVisible(true)}>Puzzle</button>;
 
