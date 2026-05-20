@@ -51,6 +51,24 @@ export function loadBooks(status) {
   return books.map(normalizeBook).filter(Boolean).filter((book) => !status || book.status === status);
 }
 
+export function mergeDefaultMedia(defaultBook, storedBook) {
+  if (!defaultBook?.pages || !storedBook?.pages) return storedBook || defaultBook;
+  const defaultsByPage = new Map(defaultBook.pages.map((page) => [page.pageNumber, page]));
+  return normalizeBook({
+    ...storedBook,
+    bgm: storedBook.bgm?.length ? storedBook.bgm : defaultBook.bgm,
+    pages: storedBook.pages.map((page) => {
+      const defaultPage = defaultsByPage.get(page.pageNumber);
+      if (!defaultPage) return page;
+      return {
+        ...page,
+        image: page.image || defaultPage.image,
+        audio: page.audio || defaultPage.audio,
+      };
+    }),
+  });
+}
+
 export function upsertBook(book) {
   const books = loadStored(BOOKS_KEY) || [];
   const normalized = normalizeBook(book);

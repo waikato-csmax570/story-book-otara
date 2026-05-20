@@ -27,6 +27,7 @@ import {
   loadOfflineAi,
   loadPublished,
   loadBooks,
+  mergeDefaultMedia,
   passwords,
   publishBook,
   saveDraft,
@@ -67,7 +68,7 @@ export default function App() {
   useEffect(() => {
     loadDefaultBook().then((defaultBook) => {
       const stored = loadDraft() || loadPublished();
-      const initial = stored || defaultBook;
+      const initial = stored ? mergeDefaultMedia(defaultBook, stored) : defaultBook;
       upsertBook(initial);
       setBook(initial);
       setBooks(loadBooks());
