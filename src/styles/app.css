@@ -688,6 +688,21 @@ label .ai-highlight,
   font-size: 0.9rem;
 }
 
+.answer-empty-action {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.answer-empty-action button {
+  background: #1663d8;
+  border-color: #1663d8;
+  color: #fff;
+  flex: 0 0 auto;
+  font-weight: 800;
+}
+
 .qa-head,
 .qa-actions {
   align-items: center;
@@ -1581,6 +1596,11 @@ label .ai-highlight,
   .settings-grid label:nth-child(3),
   .settings-grid label:nth-child(5) {
     grid-column: auto;
+  }
+
+  .answer-empty-action {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .book-spread,

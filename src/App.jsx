@@ -612,12 +612,12 @@ function AiTab({ book, page, updateNested }) {
     }));
   }
 
-  function generateFor(questionId) {
+  function generateFor(questionId, forcedPreset = preset) {
     const context = contextMode === "book"
       ? book.pages.map((item) => `${item.title}: ${item.content.en}`).join("\n")
       : contextMode === "page" ? `${page.title}\n${page.content.en}` : "";
-    const prompt = toolMode === "custom" ? customPrompt : `Preset ${preset}: generate child-friendly ${preset} for ${page.title}. Context: ${context}`;
-    if (preset === "culture") {
+    const prompt = toolMode === "custom" ? customPrompt : `Preset ${forcedPreset}: generate child-friendly ${forcedPreset} for ${page.title}. Context: ${context}`;
+    if (forcedPreset === "culture") {
       updateTerms(page.ai?.cultureTerms?.length ? page.ai.cultureTerms : [
         { term: "kaitiaki", explanation: "Guardian or caretaker." },
         { term: "whenua", explanation: "Land, home, and place of belonging." },
@@ -626,7 +626,7 @@ function AiTab({ book, page, updateNested }) {
     }
     updateQuestions(questions.map((question) => {
       if (question.id !== questionId) return question;
-      if (preset === "answers") {
+      if (forcedPreset === "answers") {
         return {
           ...question,
           answers: question.answers.map((answer, index) => ({
@@ -636,7 +636,7 @@ function AiTab({ book, page, updateNested }) {
           })),
         };
       }
-      if (preset === "reaction") {
+      if (forcedPreset === "reaction") {
         return {
           ...question,
           answers: question.answers.map((answer, index) => ({ ...answer, reaction: answer.reaction || `Reaction generated from: ${prompt.slice(0, 80)} (${index + 1})` })),
@@ -692,12 +692,18 @@ function AiTab({ book, page, updateNested }) {
           <div className="qa-head">
             <h4>Question {questionIndex + 1}</h4>
             <div className="qa-actions">
-              <button onClick={() => generateFor(question.id)}><Sparkles size={16} /> Generate</button>
+              <button onClick={() => generateFor(question.id, "question")}><Sparkles size={16} /> Question</button>
+              <button onClick={() => generateFor(question.id, "answers")}><Sparkles size={16} /> Answers</button>
               <button className="danger" onClick={() => deleteQuestion(question.id)}><Trash2 size={15} /> Delete</button>
             </div>
           </div>
           <label>Question<input value={question.prompt} onChange={(e) => updateQuestion(question.id, { prompt: e.target.value })} /></label>
-          {question.prompt && !question.answers.some((answer) => answer.text.trim()) && <p className="empty-answer-note">No answers yet. Use the Answers preset or add answer options before publishing this quiz.</p>}
+          {question.prompt && !question.answers.some((answer) => answer.text.trim()) && (
+            <div className="empty-answer-note answer-empty-action">
+              <span>No answers yet. Generate answer options before publishing this quiz.</span>
+              <button onClick={() => generateFor(question.id, "answers")}><Sparkles size={16} /> Generate Answers</button>
+            </div>
+          )}
           {question.answers.map((answer, answerIndex) => (
             <div className="answer-row" key={answer.id}>
               <label>Answer {answerIndex + 1}<input value={answer.text} onChange={(e) => updateQuestion(question.id, { answers: question.answers.map((item) => item.id === answer.id ? { ...item, text: e.target.value } : item) })} /></label>
