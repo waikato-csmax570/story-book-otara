@@ -6,7 +6,6 @@ import {
   ArrowRight,
   BookOpen,
   Eye,
-  FileImage,
   LogOut,
   Music,
   Plus,
@@ -18,6 +17,7 @@ import {
   Upload,
   UserRound,
   Volume2,
+  X,
 } from "lucide-react";
 import {
   clearAuth,
@@ -39,14 +39,29 @@ import { publicUrl } from "./lib/paths.js";
 
 const tabs = ["Content", "AI & Questions", "Sprite Behavior"];
 const reactionPresets = [
-  "encouraging",
-  "celebration",
+  "warm",
   "curious",
-  "gentle hint",
-  "culture note",
-  "try again",
-  "page wonder",
+  "culture",
 ];
+const greetingPresetText = {
+  warm: "Kia ora! Take your time and enjoy this page.",
+  curious: "What do you notice first on this page?",
+  culture: "Look for the people, places, and values in this part of the story.",
+};
+const answerReactionPresets = {
+  warm: {
+    correct: "Great answer. You found the heart of the page.",
+    incorrect: "Good try. Look back at the story and have another go.",
+  },
+  curious: {
+    correct: "Nice thinking. What clue helped you choose that?",
+    incorrect: "Keep exploring. The answer is hiding in the details.",
+  },
+  culture: {
+    correct: "Beautiful. That connects well with the story's values.",
+    incorrect: "Good effort. Think about what the page teaches about care and belonging.",
+  },
+};
 const dictionary = {
   guardian: "kaitiaki",
   children: "tamariki",
@@ -58,6 +73,25 @@ const dictionary = {
   people: "tangata",
   land: "whenua",
 };
+
+function spriteGreeting(sprite = {}, aiLine = "") {
+  const mode = sprite.greetingMode || sprite.reactionMode || "ai";
+  if (mode === "ai") return aiLine || "This page feels important.";
+  if (mode === "custom") return sprite.pageReaction || "Kia ora! Let's read this page together.";
+  if (mode === "preset") return sprite.customGreetingPresets?.[sprite.reactionPreset] || greetingPresetText[sprite.reactionPreset || "warm"] || greetingPresetText.warm;
+  return "Kia ora! Let's read this page together.";
+}
+
+function spriteAnswerReaction(sprite = {}, isCorrect, aiLine = "") {
+  const mode = sprite.answerReactionMode || "simple";
+  if (mode === "ai") return aiLine || (isCorrect ? "Yaaay! Amazing!" : "Great try. Keep going!");
+  if (mode === "custom") return (isCorrect ? sprite.correctReaction : sprite.incorrectReaction) || (isCorrect ? answerReactionPresets.warm.correct : answerReactionPresets.warm.incorrect);
+  if (mode === "preset") {
+    const preset = answerReactionPresets[sprite.answerReactionPreset || "warm"] || answerReactionPresets.warm;
+    return isCorrect ? preset.correct : preset.incorrect;
+  }
+  return isCorrect ? "Correct. Great thinking!" : "Not quite. Try again with the story clues.";
+}
 
 export default function App() {
   const [auth, setAuthState] = useState(getAuth());
@@ -216,7 +250,7 @@ function TeacherEditor({ book, books, setBooks, setBook, onLogout, onPreview }) 
       title: "New Book",
       content: { en: "Start writing here.", mi: "" },
       ai: { cultureTerms: [], questions: [defaultQuestion()] },
-      sprite: { kiriEnabled: true, mokoEnabled: true, mokoEmotion: "happy", pageReaction: "", correctReaction: "", incorrectReaction: "", reactionPreset: "encouraging", reactionMode: "ai" },
+      sprite: { kiriEnabled: true, mokoEnabled: true, mokoEmotion: "happy", pageReaction: "", correctReaction: "", incorrectReaction: "", reactionPreset: "warm", reactionMode: "ai", greetingMode: "ai", customGreetingPresets: {}, answerReactionMode: "simple", answerReactionPreset: "warm" },
       puzzle: { enabled: false, rows: 3, columns: 3 },
     };
     const created = {
@@ -326,7 +360,7 @@ function TeacherEditor({ book, books, setBooks, setBook, onLogout, onPreview }) 
         <div className="editor-grid">
           <section className="edit-panel">
             <div className="tabs">
-              {tabs.map((item) => <button key={item} className={tab === item ? "active" : ""} onClick={() => setTab(item)}>{item}</button>)}
+              {tabs.map((item) => <button key={item} className={tab === item ? "active" : ""} onClick={() => setTab(item)}><TabLabel label={item} /></button>)}
             </div>
             <AnimatePresence mode="wait">
               <motion.div
@@ -346,51 +380,136 @@ function TeacherEditor({ book, books, setBooks, setBook, onLogout, onPreview }) 
           <aside className="preview-column">
             <h3>Live Preview</h3>
             <BookSpread page={page} language="en" compact />
-            <div className="quick-actions">
-              <button onClick={() => updateNested("ai", { cultureTerms: [{ term: "kaitiaki", explanation: "Guardian or caretaker." }] })}>Generate Terms</button>
-              <button onClick={() => updateNested("ai", { question: "What does this page teach us about guardianship?" })}>Generate Question</button>
-              <button onClick={() => updateNested("ai", { feedback: "A thoughtful answer with a strong link to the story." })}>Generate Feedback</button>
-            </div>
           </aside>
         </div>
-        <ProjectSettings book={book} setBook={setBook} />
+        <ProjectSettings book={book} setBook={setBook} setNotice={setNotice} />
       </section>
     </main>
   );
 }
 
-function ProjectSettings({ book, setBook }) {
+function AiMark() {
+  return <span className="ai-highlight">AI</span>;
+}
+
+function TabLabel({ label }) {
+  if (!label.includes("AI")) return label;
+  return <><AiMark />{label.replace("AI", "")}</>;
+}
+
+function useReaderSounds() {
+  const audioRef = useRef(null);
+
+  function tone(frequency, duration = 0.16, type = "sine", gain = 0.05, delay = 0) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = audioRef.current || new AudioContext();
+    audioRef.current = ctx;
+    if (ctx.state === "suspended") ctx.resume().catch(() => {});
+    const start = ctx.currentTime + delay;
+    const oscillator = ctx.createOscillator();
+    const volume = ctx.createGain();
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, start);
+    volume.gain.setValueAtTime(0.0001, start);
+    volume.gain.exponentialRampToValueAtTime(gain, start + 0.02);
+    volume.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+    oscillator.connect(volume);
+    volume.connect(ctx.destination);
+    oscillator.start(start);
+    oscillator.stop(start + duration + 0.02);
+  }
+
+  return {
+    page: () => {
+      tone(220, 0.08, "triangle", 0.03);
+      tone(330, 0.12, "triangle", 0.025, 0.05);
+    },
+    chime: () => {
+      tone(660, 0.09, "sine", 0.035);
+      tone(880, 0.12, "sine", 0.03, 0.08);
+    },
+    correct: () => {
+      tone(523, 0.08, "sine", 0.04);
+      tone(784, 0.12, "sine", 0.04, 0.07);
+      tone(1046, 0.14, "sine", 0.035, 0.14);
+    },
+    wrong: () => {
+      tone(260, 0.12, "triangle", 0.035);
+      tone(196, 0.14, "triangle", 0.025, 0.1);
+    },
+    star: () => {
+      tone(988, 0.07, "sine", 0.035);
+      tone(1318, 0.12, "sine", 0.03, 0.08);
+    },
+  };
+}
+
+function ProjectSettings({ book, setBook, setNotice }) {
   const [open, setOpen] = useState(false);
-  const settings = book.settings || {};
+  const [draftSettings, setDraftSettings] = useState(book.settings || {});
+  const [draftBgm, setDraftBgm] = useState((book.bgm || []).join("\n"));
+
+  useEffect(() => {
+    if (!open) {
+      setDraftSettings(book.settings || {});
+      setDraftBgm((book.bgm || []).join("\n"));
+    }
+  }, [book, open]);
+
   function updateSettings(patch) {
-    setBook({ ...book, settings: { ...settings, ...patch } });
+    setDraftSettings((current) => ({ ...current, ...patch }));
+  }
+
+  function saveAndClose() {
+    setBook({
+      ...book,
+      settings: draftSettings,
+      bgm: draftBgm.split("\n").map((item) => item.trim()).filter(Boolean),
+    });
+    setNotice?.("AI settings saved");
+    setOpen(false);
   }
 
   return (
-    <section className={`settings-box collapsed-settings ${open ? "open" : ""}`}>
-      <button className="settings-toggle" onClick={() => setOpen(!open)}><Sparkles size={17} /> AI Settings</button>
-      {open && <>
-      <label>Provider<select value={settings.aiProvider || "offline"} onChange={(e) => updateSettings({ aiProvider: e.target.value })}>
-        <option value="offline">Offline demo</option>
-        <option value="groq">Groq</option>
-        <option value="openai">OpenAI compatible</option>
-      </select></label>
-      <label>Model<input value={settings.aiModel || ""} onChange={(e) => updateSettings({ aiModel: e.target.value })} placeholder="Model name" /></label>
-      <label>Endpoint<input value={settings.aiEndpoint || ""} onChange={(e) => updateSettings({ aiEndpoint: e.target.value })} placeholder="API endpoint" /></label>
-      <label>AI Token<input type="password" value={settings.aiToken || ""} onChange={(e) => updateSettings({ aiToken: e.target.value })} placeholder="Stored locally in this browser" /></label>
-      <label>BGM Tracks<textarea rows="3" value={(book.bgm || []).join("\n")} onChange={(e) => setBook({ ...book, bgm: e.target.value.split("\n").map((item) => item.trim()).filter(Boolean) })} /></label>
-      <label>Kiri Sprite<select value={settings.kiriSprite || "owl"} onChange={(e) => updateSettings({ kiriSprite: e.target.value })}>
-        <option value="owl">Owl guardian</option>
-        <option value="kiwi">Kiwi reader</option>
-        <option value="star">Star spirit</option>
-      </select></label>
-      <label>Moko Sprite<select value={settings.mokoSprite || "taniwha"} onChange={(e) => updateSettings({ mokoSprite: e.target.value })}>
-        <option value="taniwha">Taniwha buddy</option>
-        <option value="leaf">Leaf friend</option>
-        <option value="shell">Shell helper</option>
-      </select></label>
-      </>}
-    </section>
+    <>
+      <button className="floating-settings-button" onClick={() => setOpen(true)}><Settings size={17} /> <AiMark /> Settings</button>
+      {open && (
+        <div className="modal-backdrop">
+          <motion.section className="settings-modal" initial={{ opacity: 0, y: 18, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }}>
+            <div className="modal-head">
+              <h3><AiMark /> Settings</h3>
+              <button className="icon" onClick={() => setOpen(false)} aria-label="Close AI settings"><X size={18} /></button>
+            </div>
+            <div className="settings-grid">
+              <label>Provider<select value={draftSettings.aiProvider || "offline"} onChange={(e) => updateSettings({ aiProvider: e.target.value })}>
+                <option value="offline">Offline demo</option>
+                <option value="groq">Groq</option>
+                <option value="openai">OpenAI compatible</option>
+              </select></label>
+              <label>Model<input value={draftSettings.aiModel || ""} onChange={(e) => updateSettings({ aiModel: e.target.value })} placeholder="Model name" /></label>
+              <label>Endpoint<input value={draftSettings.aiEndpoint || ""} onChange={(e) => updateSettings({ aiEndpoint: e.target.value })} placeholder="API endpoint" /></label>
+              <label><span><AiMark /> Token</span><input type="password" value={draftSettings.aiToken || ""} onChange={(e) => updateSettings({ aiToken: e.target.value })} placeholder="Stored locally in this browser" /></label>
+              <label>BGM Tracks<textarea rows="3" value={draftBgm} onChange={(e) => setDraftBgm(e.target.value)} /></label>
+              <label>Kiri Sprite<select value={draftSettings.kiriSprite || "owl"} onChange={(e) => updateSettings({ kiriSprite: e.target.value })}>
+                <option value="owl">Owl guardian</option>
+                <option value="kiwi">Kiwi reader</option>
+                <option value="star">Star spirit</option>
+              </select></label>
+              <label>Moko Sprite<select value={draftSettings.mokoSprite || "taniwha"} onChange={(e) => updateSettings({ mokoSprite: e.target.value })}>
+                <option value="taniwha">Taniwha buddy</option>
+                <option value="leaf">Leaf friend</option>
+                <option value="shell">Shell helper</option>
+              </select></label>
+            </div>
+            <div className="modal-actions">
+              <button className="outline" onClick={() => setOpen(false)}>Close</button>
+              <button className="primary" onClick={saveAndClose}><Save size={17} /> Save & Close</button>
+            </div>
+          </motion.section>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -435,7 +554,7 @@ function ContentTab({ book, page, updateBook, updatePage }) {
           <label>English Story Text<textarea rows="11" value={page.content.en} onChange={(e) => updatePage({ content: { ...page.content, en: e.target.value } })} /></label>
           <div className="translate-actions">
             <button onClick={dictionaryTranslate}>Dictionary Translate</button>
-            <button onClick={aiTranslate}><Sparkles size={16} /> AI Translate</button>
+            <button onClick={aiTranslate}><Sparkles size={16} /> <AiMark /> Translate</button>
           </div>
           <label>Māori Story Text<textarea rows="5" value={page.content.mi} onChange={(e) => updatePage({ content: { ...page.content, mi: e.target.value } })} /></label>
           <div className="puzzle-settings">
@@ -457,6 +576,7 @@ function AiTab({ book, page, updateNested }) {
   const [preset, setPreset] = useState("question");
   const [customPrompt, setCustomPrompt] = useState("");
   const [contextMode, setContextMode] = useState("page");
+  const [toolOpen, setToolOpen] = useState(false);
 
   function updateQuestions(next) {
     updateNested("ai", { questions: next });
@@ -497,6 +617,13 @@ function AiTab({ book, page, updateNested }) {
       ? book.pages.map((item) => `${item.title}: ${item.content.en}`).join("\n")
       : contextMode === "page" ? `${page.title}\n${page.content.en}` : "";
     const prompt = toolMode === "custom" ? customPrompt : `Preset ${preset}: generate child-friendly ${preset} for ${page.title}. Context: ${context}`;
+    if (preset === "culture") {
+      updateTerms(page.ai?.cultureTerms?.length ? page.ai.cultureTerms : [
+        { term: "kaitiaki", explanation: "Guardian or caretaker." },
+        { term: "whenua", explanation: "Land, home, and place of belonging." },
+      ]);
+      return;
+    }
     updateQuestions(questions.map((question) => {
       if (question.id !== questionId) return question;
       if (preset === "answers") {
@@ -515,21 +642,38 @@ function AiTab({ book, page, updateNested }) {
           answers: question.answers.map((answer, index) => ({ ...answer, reaction: answer.reaction || `Reaction generated from: ${prompt.slice(0, 80)} (${index + 1})` })),
         };
       }
-      return { ...question, prompt: question.prompt || `What does this page teach us about ${page.title}?` };
+      return {
+        ...question,
+        prompt: question.prompt || `What does this page teach us about ${page.title}?`,
+        answers: question.answers.map((answer) => ({ ...answer, text: "", reaction: "" })),
+      };
     }));
   }
 
   return (
     <div className="tab-body">
-      <section className="ai-toolbox">
-        <h4>AI Tool</h4>
-        <div className="project-fields">
-          <label>Mode<select value={toolMode} onChange={(e) => setToolMode(e.target.value)}><option value="preset">Preset module</option><option value="custom">Write prompt</option></select></label>
-          <label>Preset<select value={preset} onChange={(e) => setPreset(e.target.value)}><option value="question">Question</option><option value="answers">Answers</option><option value="reaction">Answer reactions</option><option value="culture">Culture terms</option></select></label>
-          <label>Context<select value={contextMode} onChange={(e) => setContextMode(e.target.value)}><option value="page">Send this page</option><option value="book">Send full book</option><option value="none">Prompt only</option></select></label>
+      <button className="floating-ai-button" onClick={() => setToolOpen(true)}><Sparkles size={17} /> <AiMark /> Tool</button>
+      {toolOpen && (
+        <div className="modal-backdrop">
+          <motion.section className="ai-tool-modal" initial={{ opacity: 0, y: 18, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }}>
+            <div className="modal-head">
+              <h3><AiMark /> Tool</h3>
+              <button className="icon" onClick={() => setToolOpen(false)} aria-label="Close AI tool"><X size={18} /></button>
+            </div>
+            <div className="project-fields">
+              <label>Mode<select value={toolMode} onChange={(e) => setToolMode(e.target.value)}><option value="preset">Preset module</option><option value="custom">Write prompt</option></select></label>
+              <label>Preset<select value={preset} onChange={(e) => setPreset(e.target.value)}><option value="question">Question only</option><option value="answers">Answers</option><option value="reaction">Answer reactions</option><option value="culture">Culture terms</option></select></label>
+              <label>Context<select value={contextMode} onChange={(e) => setContextMode(e.target.value)}><option value="page">Send this page</option><option value="book">Send full book</option><option value="none">Prompt only</option></select></label>
+            </div>
+            {toolMode === "custom" && <label>User Prompt<textarea rows="3" value={customPrompt} onChange={(e) => setCustomPrompt(e.target.value)} placeholder="Write what you want the AI to generate..." /></label>}
+            <p className="helper-note">Question generation creates the question only. Add answers separately or use the Answers preset.</p>
+            <div className="modal-actions">
+              <button className="outline" onClick={() => setToolOpen(false)}>Close</button>
+              <button className="primary" onClick={() => setToolOpen(false)}><Save size={17} /> Save & Close</button>
+            </div>
+          </motion.section>
         </div>
-        {toolMode === "custom" && <label>User Prompt<textarea rows="3" value={customPrompt} onChange={(e) => setCustomPrompt(e.target.value)} placeholder="Write what you want the AI to generate..." /></label>}
-      </section>
+      )}
       <section className="qa-block">
         <div className="qa-head">
           <h4>Culture Terms</h4>
@@ -553,6 +697,7 @@ function AiTab({ book, page, updateNested }) {
             </div>
           </div>
           <label>Question<input value={question.prompt} onChange={(e) => updateQuestion(question.id, { prompt: e.target.value })} /></label>
+          {question.prompt && !question.answers.some((answer) => answer.text.trim()) && <p className="empty-answer-note">No answers yet. Use the Answers preset or add answer options before publishing this quiz.</p>}
           {question.answers.map((answer, answerIndex) => (
             <div className="answer-row" key={answer.id}>
               <label>Answer {answerIndex + 1}<input value={answer.text} onChange={(e) => updateQuestion(question.id, { answers: question.answers.map((item) => item.id === answer.id ? { ...item, text: e.target.value } : item) })} /></label>
@@ -574,18 +719,106 @@ function AiTab({ book, page, updateNested }) {
 }
 
 function SpriteTab({ page, updateNested }) {
+  const sprite = page.sprite || {};
+  const greetingMode = sprite.greetingMode || sprite.reactionMode || "ai";
+  const answerMode = sprite.answerReactionMode || "simple";
+  const selectedGreetingPreset = sprite.reactionPreset || "warm";
+  const selectedAnswerPreset = answerReactionPresets[sprite.answerReactionPreset] ? sprite.answerReactionPreset : "warm";
+
+  function updateGreetingPreset(value) {
+    updateNested("sprite", {
+      reactionPreset: selectedGreetingPreset,
+      customGreetingPresets: {
+        ...(sprite.customGreetingPresets || {}),
+        [selectedGreetingPreset]: value,
+      },
+    });
+  }
+
+  function addGreetingPreset() {
+    const id = `custom-${Date.now()}`;
+    updateNested("sprite", {
+      greetingMode: "preset",
+      reactionMode: "preset",
+      reactionPreset: id,
+      customGreetingPresets: {
+        ...(sprite.customGreetingPresets || {}),
+        [id]: "Write a new page opening greeting.",
+      },
+    });
+  }
+
+  const greetingOptions = [
+    ...reactionPresets.map((id) => [id, id]),
+    ...Object.keys(sprite.customGreetingPresets || {}).map((id) => [id, `custom ${id.split("-").pop()}`]),
+  ];
+  const selectedGreetingText = sprite.customGreetingPresets?.[selectedGreetingPreset] || greetingPresetText[selectedGreetingPreset] || "";
+
   return (
-    <div className="tab-body two-col">
-      <label className="check"><input type="checkbox" checked={page.sprite.kiriEnabled} onChange={(e) => updateNested("sprite", { kiriEnabled: e.target.checked })} /> Kiri enabled</label>
-      <label className="check"><input type="checkbox" checked={page.sprite.mokoEnabled} onChange={(e) => updateNested("sprite", { mokoEnabled: e.target.checked })} /> Moko enabled</label>
-      <label>Emotion<select value={page.sprite.mokoEmotion} onChange={(e) => updateNested("sprite", { mokoEmotion: e.target.value })}>
-        <option>happy</option><option>excited</option><option>confused</option><option>sad</option>
-      </select></label>
-      <label>Reaction Mode<select value={page.sprite.reactionMode || "ai"} onChange={(e) => updateNested("sprite", { reactionMode: e.target.value })}><option value="ai">AI reaction</option><option value="preset">Preset reaction</option><option value="custom">Custom text</option></select></label>
-      <label>Preset<select value={page.sprite.reactionPreset || "encouraging"} onChange={(e) => updateNested("sprite", { reactionPreset: e.target.value })}>{reactionPresets.map((item) => <option key={item}>{item}</option>)}</select></label>
-      <label>Page Open Reaction<textarea rows="4" value={page.sprite.pageReaction || ""} onChange={(e) => updateNested("sprite", { pageReaction: e.target.value })} /></label>
-      <label>Correct Answer Reaction<textarea rows="4" value={page.sprite.correctReaction || ""} onChange={(e) => updateNested("sprite", { correctReaction: e.target.value })} /></label>
-      <label>Wrong Answer Reaction<textarea rows="4" value={page.sprite.incorrectReaction || ""} onChange={(e) => updateNested("sprite", { incorrectReaction: e.target.value })} /></label>
+    <div className="tab-body sprite-editor">
+      <section className="qa-block">
+        <div className="sprite-switches">
+          <label className="check"><input type="checkbox" checked={sprite.kiriEnabled} onChange={(e) => updateNested("sprite", { kiriEnabled: e.target.checked })} /> Kiri learning tools</label>
+          <label className="check"><input type="checkbox" checked={sprite.mokoEnabled} onChange={(e) => updateNested("sprite", { mokoEnabled: e.target.checked })} /> Moko encouragement sprite</label>
+          <label>Emotion<select value={sprite.mokoEmotion} onChange={(e) => updateNested("sprite", { mokoEmotion: e.target.value })}>
+            <option>happy</option><option>excited</option><option>confused</option><option>sad</option>
+          </select></label>
+        </div>
+      </section>
+
+      <section className="qa-block">
+        <div className="qa-head">
+          <h4>Page Opening Greeting</h4>
+          <button onClick={addGreetingPreset}><Plus size={16} /> Add Preset</button>
+        </div>
+        <div className="project-fields">
+          <label>Greeting Source<select className={greetingMode === "ai" ? "ai-select" : ""} value={greetingMode} onChange={(e) => updateNested("sprite", { greetingMode: e.target.value, reactionMode: e.target.value })}>
+            <option value="default">Default greeting</option>
+            <option value="preset">Use preset</option>
+            <option value="custom">Write by hand</option>
+            <option value="ai">AI reaction</option>
+          </select></label>
+          <label>Preset<select value={selectedGreetingPreset} disabled={greetingMode !== "preset"} onChange={(e) => updateNested("sprite", { reactionPreset: e.target.value })}>
+            {greetingOptions.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+          </select></label>
+        </div>
+        {greetingMode === "preset" && (
+          <label>Edit Selected Preset<textarea rows="3" value={selectedGreetingText} onChange={(e) => updateGreetingPreset(e.target.value)} /></label>
+        )}
+        {greetingMode === "custom" && (
+          <label>Handwritten Greeting<textarea rows="3" value={sprite.pageReaction || ""} onChange={(e) => updateNested("sprite", { pageReaction: e.target.value })} placeholder="Write what Moko says when this page opens." /></label>
+        )}
+        {greetingMode === "ai" && <p className="helper-note"><AiMark /> reaction uses the page text to create the opening line in reader mode.</p>}
+      </section>
+
+      <section className="qa-block">
+        <h4>Reader Answer Reaction</h4>
+        <div className="project-fields">
+          <label>Feedback Source<select className={answerMode === "ai" ? "ai-select" : ""} value={answerMode} onChange={(e) => updateNested("sprite", { answerReactionMode: e.target.value })}>
+            <option value="simple">Simple default</option>
+            <option value="preset">Use preset</option>
+            <option value="custom">Write by hand</option>
+            <option value="ai">AI reaction</option>
+          </select></label>
+          <label>Preset<select value={selectedAnswerPreset} disabled={answerMode !== "preset"} onChange={(e) => updateNested("sprite", { answerReactionPreset: e.target.value })}>
+            {Object.keys(answerReactionPresets).map((item) => <option key={item} value={item}>{item}</option>)}
+          </select></label>
+        </div>
+        {answerMode === "simple" && <p className="helper-note">Correct answers get a short encouragement. Wrong answers get a gentle try-again message.</p>}
+        {answerMode === "preset" && (
+          <div className="reaction-preview">
+            <p><strong>Correct:</strong> {answerReactionPresets[selectedAnswerPreset].correct}</p>
+            <p><strong>Wrong:</strong> {answerReactionPresets[selectedAnswerPreset].incorrect}</p>
+          </div>
+        )}
+        {answerMode === "custom" && (
+          <div className="two-col">
+            <label>Correct Answer Reaction<textarea rows="4" value={sprite.correctReaction || ""} onChange={(e) => updateNested("sprite", { correctReaction: e.target.value })} /></label>
+            <label>Wrong Answer Reaction<textarea rows="4" value={sprite.incorrectReaction || ""} onChange={(e) => updateNested("sprite", { incorrectReaction: e.target.value })} /></label>
+          </div>
+        )}
+        {answerMode === "ai" && <p className="helper-note"><AiMark /> reaction uses the chosen answer and page context when the reader responds.</p>}
+      </section>
     </div>
   );
 }
@@ -617,17 +850,20 @@ function StudentReader({ book, books, setBook, onLogout, onTeacher, canEdit }) {
   const [flyingStars, setFlyingStars] = useState([]);
   const [unlockedPuzzles, setUnlockedPuzzles] = useState(new Set());
   const [pendingPuzzleIndex, setPendingPuzzleIndex] = useState(null);
+  const sounds = useReaderSounds();
   const page = book.pages[pageIndex];
   const publishedBooks = books.filter((item) => item.status === "published");
 
   function go(next) {
     const index = Math.max(0, Math.min(book.pages.length - 1, next));
+    if (index === pageIndex) return;
     const target = book.pages[index];
     const canPuzzle = target?.image && !String(target.image).toLowerCase().includes(".mp4");
     if (canPuzzle && target?.puzzle?.enabled && !unlockedPuzzles.has(target.id) && index !== pageIndex) {
       setPendingPuzzleIndex(index);
       return;
     }
+    sounds.page();
     setPageIndex(index);
     setVisited((current) => new Set([...current, index + 1]));
   }
@@ -636,11 +872,13 @@ function StudentReader({ book, books, setBook, onLogout, onTeacher, canEdit }) {
     const target = book.pages[index];
     setUnlockedPuzzles((current) => new Set([...current, target.id]));
     setPendingPuzzleIndex(null);
+    sounds.page();
     setPageIndex(index);
     setVisited((current) => new Set([...current, index + 1]));
   }
 
   function awardStars(amount, sourceEl) {
+    sounds.star();
     setStars((value) => value + amount);
     const source = sourceEl?.getBoundingClientRect?.();
     const startX = source ? source.left + source.width / 2 : window.innerWidth / 2;
@@ -682,15 +920,19 @@ function StudentReader({ book, books, setBook, onLogout, onTeacher, canEdit }) {
           onAnimationEnd={() => setFlyingStars((current) => current.filter((item) => item.id !== star.id))}
         >★</span>
       ))}
-      <BookSpread page={page} language={language} onPrev={() => go(pageIndex - 1)} onNext={() => go(pageIndex + 1)} />
+      <section className="reader-stage">
+        <span className="book-rail left" />
+        <BookSpread page={page} language={language} onPrev={() => go(pageIndex - 1)} onNext={() => go(pageIndex + 1)} />
+        <span className="book-rail right" />
+      </section>
       <div className="reader-footer">
         <button disabled={pageIndex === 0} onClick={() => go(pageIndex - 1)}><ArrowLeft size={18} /> Previous</button>
         <span>{pageIndex + 1} / {book.pages.length}</span>
         <button disabled={pageIndex === book.pages.length - 1} onClick={() => go(pageIndex + 1)}>Next <ArrowRight size={18} /></button>
       </div>
       <BgmPlayer tracks={book.bgm} />
-      <KiriSprite page={page} sprite={book.settings?.kiriSprite || "owl"} onStar={awardStars} />
-      <MokoBuddy page={page} sprite={book.settings?.mokoSprite || "taniwha"} />
+      <KiriSprite page={page} sprite={book.settings?.kiriSprite || "owl"} onStar={awardStars} onOpenSound={sounds.chime} onAnswerSound={(isCorrect) => (isCorrect ? sounds.correct() : sounds.wrong())} />
+      <MokoBuddy page={page} sprite={book.settings?.mokoSprite || "taniwha"} onSpeakSound={sounds.chime} />
       {pendingPuzzleIndex !== null && (
         <PuzzleGate
           page={book.pages[pendingPuzzleIndex]}
@@ -769,7 +1011,7 @@ function ProgressTracker({ visited, total, stars }) {
   );
 }
 
-function KiriSprite({ page, sprite, onStar }) {
+function KiriSprite({ page, sprite, onStar, onOpenSound, onAnswerSound }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("terms");
   const [ai, setAi] = useState(null);
@@ -783,6 +1025,7 @@ function KiriSprite({ page, sprite, onStar }) {
   async function openPanel(nextMode = mode) {
     setMode(nextMode);
     setOpen(true);
+    onOpenSound?.();
     if (!ai) setAi(await loadOfflineAi(page.pageNumber));
   }
 
@@ -794,6 +1037,8 @@ function KiriSprite({ page, sprite, onStar }) {
         <SpriteFace type={sprite} />
         <span>Kiri</span>
       </button>
+      <span className="sprite-hint-badge">💡</span>
+      <span className="sprite-gear-badge">⚙</span>
       {open && (
         <div className="sprite-panel">
           <div className="sprite-tabs">
@@ -807,7 +1052,7 @@ function KiriSprite({ page, sprite, onStar }) {
               ))}
             </div>
           ) : (
-            <Quiz page={page} ai={ai} onStar={onStar} />
+            <Quiz page={page} ai={ai} onStar={onStar} onAnswerSound={onAnswerSound} />
           )}
         </div>
       )}
@@ -816,34 +1061,49 @@ function KiriSprite({ page, sprite, onStar }) {
 }
 
 function SpriteFace({ type }) {
-  if (type === "kiwi") return <span className="kiwi-face"><i /></span>;
-  if (type === "star") return <span className="star-face">★</span>;
-  if (type === "leaf") return <span className="leaf-face">◆</span>;
-  if (type === "shell") return <span className="shell-face">◖</span>;
-  if (type === "taniwha") return <span className="moko-face">☘</span>;
-  return <span className="owl-face"><i /><i /></span>;
+  const faces = {
+    kiwi: "🥝",
+    star: "⭐",
+    leaf: "🍃",
+    shell: "🐚",
+    taniwha: "😊",
+    owl: "🦉",
+  };
+  return <span className="sprite-emoji-face">{faces[type] || faces.owl}</span>;
 }
 
-function Quiz({ page, ai, onStar }) {
+function Quiz({ page, ai, onStar, onAnswerSound }) {
   const [choice, setChoice] = useState("");
+  const [awardedQuestionIds, setAwardedQuestionIds] = useState(new Set());
   const configured = page.ai?.questions?.find((item) => item.prompt);
   const question = configured?.prompt || ai.question;
-  const answers = configured?.answers?.some((item) => item.text) ? configured.answers : ai.answers;
+  const hasConfiguredAnswers = configured?.answers?.some((item) => item.text);
+  const answers = configured ? configured.answers.filter((item) => item.text) : ai.answers;
   const correct = configured?.correctAnswerId || answers[0]?.id;
+  const questionId = configured?.id || `offline-page-${page.id || page.pageNumber}`;
+
+  useEffect(() => {
+    setChoice("");
+  }, [questionId]);
 
   return (
     <div className="quiz">
       <h4>{question}</h4>
+      {configured && !hasConfiguredAnswers && <p className="empty-answer-note">No answers have been added for this question yet.</p>}
       {answers.map((answer) => (
-        <button key={answer.id} className={choice === answer.id ? "chosen" : ""} onClick={() => {
+        <button key={answer.id} className={choice === answer.id ? "chosen" : ""} onClick={(event) => {
+          const isCorrect = answer.id === correct;
           setChoice(answer.id);
-          if (answer.id === correct) onStar(2, event.currentTarget);
+          onAnswerSound?.(isCorrect);
+          if (isCorrect && !awardedQuestionIds.has(questionId)) {
+            onStar(2, event.currentTarget);
+            setAwardedQuestionIds((current) => new Set([...current, questionId]));
+          }
           document.dispatchEvent(new CustomEvent("reader:answerResult", {
             detail: {
-              isCorrect: answer.id === correct,
+              isCorrect,
               reaction: answer.reaction,
-              correctReaction: page.sprite?.correctReaction,
-              incorrectReaction: page.sprite?.incorrectReaction,
+              sprite: page.sprite,
             },
           }));
         }}>{answer.text}</button>
@@ -853,13 +1113,13 @@ function Quiz({ page, ai, onStar }) {
   );
 }
 
-function MokoBuddy({ page, sprite }) {
+function MokoBuddy({ page, sprite, onSpeakSound }) {
   const [line, setLine] = useState("");
 
   useEffect(() => {
     let active = true;
     loadOfflineAi(page.pageNumber).then((ai) => {
-      if (active) setLine(page.sprite?.pageReaction || ai.reaction);
+      if (active) setLine(spriteGreeting(page.sprite, ai.reaction));
     });
     return () => {
       active = false;
@@ -869,14 +1129,29 @@ function MokoBuddy({ page, sprite }) {
   useEffect(() => {
     function onAnswer(event) {
       const detail = event.detail || {};
-      setLine(detail.reaction || (detail.isCorrect ? detail.correctReaction : detail.incorrectReaction) || (detail.isCorrect ? "Yaaay! Amazing!" : "Great try. Keep going!"));
+      setLine(spriteAnswerReaction(detail.sprite, detail.isCorrect, detail.reaction));
     }
     document.addEventListener("reader:answerResult", onAnswer);
     return () => document.removeEventListener("reader:answerResult", onAnswer);
   }, []);
 
   if (page.sprite?.mokoEnabled === false) return null;
-  return <aside className={`sprite moko ${page.sprite?.mokoEmotion || "happy"}`}><div className={`sprite-avatar moko-avatar ${sprite}`}><SpriteFace type={sprite} /><span>Moko</span></div><p>{line}</p></aside>;
+  function speakLine() {
+    onSpeakSound?.();
+    if (!line.trim() || typeof speechSynthesis === "undefined") return;
+    const utterance = new SpeechSynthesisUtterance(line);
+    utterance.lang = "en-NZ";
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utterance);
+  }
+
+  return (
+    <aside className={`sprite moko ${page.sprite?.mokoEmotion || "happy"}`}>
+      <button className="moko-sound" onClick={speakLine} aria-label="Read Moko line"><Volume2 size={17} /></button>
+      <div className={`sprite-avatar moko-avatar ${sprite}`}><SpriteFace type={sprite} /><span>Moko</span></div>
+      <p>{line}</p>
+    </aside>
+  );
 }
 
 function PuzzleGate({ page, onSolved, onClose, onStar }) {
@@ -1079,39 +1354,54 @@ function SlottedImagePuzzle({ imageSrc, rows = 3, columns = 3, onSolved }) {
 function BgmPlayer({ tracks = [] }) {
   const audioRef = useRef(null);
   const [playing, setPlaying] = useState(true);
+  const [blocked, setBlocked] = useState(false);
   const [trackIndex, setTrackIndex] = useState(0);
   const src = tracks[trackIndex] ? publicUrl(tracks[trackIndex]) : "";
 
+  function tryPlay() {
+    const audio = audioRef.current;
+    if (!audio || !src) return;
+    audio.play()
+      .then(() => setBlocked(false))
+      .catch(() => setBlocked(true));
+  }
+
   useEffect(() => {
-  const audio = audioRef.current;
-  if (!audio) return;
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playing) {
+      tryPlay();
+    } else {
+      audio.pause();
+      setBlocked(false);
+    }
+  }, [playing, src]);
 
-  if (playing) {
-    audio.play().catch(() => setPlaying(false));
-  } else {
-    audio.pause();
+  useEffect(() => {
+    if (!playing || !blocked) return undefined;
+    const resume = () => tryPlay();
+    window.addEventListener("pointerdown", resume, { once: true });
+    window.addEventListener("keydown", resume, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", resume);
+      window.removeEventListener("keydown", resume);
+    };
+  }, [playing, blocked, src]);
+
+  function togglePlaying() {
+    const next = !playing;
+    setPlaying(next);
+    if (next) window.setTimeout(tryPlay, 0);
+    else audioRef.current?.pause();
   }
-}, [playing]);
-
-useEffect(() => {
-  const audio = audioRef.current;
-  if (!audio) return;
-
-  audio.pause();
-  audio.load();
-
-  if (playing) {
-    audio.play().catch(() => setPlaying(false));
-  }
-}, [src]);
 
   return (
     <div className="bgm-player">
       {tracks.length > 1 && <select value={trackIndex} onChange={(e) => setTrackIndex(Number(e.target.value))}>
         {tracks.map((track, index) => <option key={track} value={index}>{track.split("/").pop()}</option>)}
       </select>}
-      <button onClick={() => setPlaying(!playing)} title="Toggle music"><Music size={18} />{playing ? "Pause" : "Play"}</button>
-      {src && <audio ref={audioRef} src={src} loop />}
+      <button className={playing ? "music-on" : ""} onClick={togglePlaying} title="Toggle music"><Music size={18} />{blocked ? "Start Music" : playing ? "Music On" : "Music Off"}</button>
+      {src && <audio ref={audioRef} src={src} loop autoPlay={playing} />}
     </div>
   );
 }
