@@ -72,6 +72,96 @@ const dictionary = {
   people: "tangata",
   land: "whenua",
 };
+const fallbackCultureTerms = [
+  { term: "kaitiaki", explanation: "Guardian or caretaker." },
+  { term: "whenua", explanation: "Land, home, and place of belonging." },
+  { term: "mana", explanation: "Spiritual strength, authority, and respect." },
+  { term: "whanau", explanation: "Family and the wider circle of people who care for each other." },
+  { term: "awa", explanation: "River, often understood as a living ancestor and source of life." },
+  { term: "tamariki", explanation: "Children or young people." },
+];
+
+function normalizeText(value) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function pageKeywords(page) {
+  const source = `${page.title || ""} ${page.content?.en || ""}`;
+  return Array.from(new Set(source.match(/\b[A-Za-z][A-Za-z'-]{4,}\b/g) || []))
+    .filter((word) => !["about", "there", "their", "which", "would", "could", "story", "page"].includes(word.toLowerCase()))
+    .slice(0, 6);
+}
+
+function buildQuestionCandidates(page) {
+  const keywords = pageKeywords(page);
+  const topic = keywords[0] || page.title || "this page";
+  const secondTopic = keywords[1] || "the story";
+  return [
+    `What role does ${page.title || topic} play in this part of the story?`,
+    `What do you think happens next after ${topic}?`,
+    `Why is ${topic} important to the people in the story?`,
+    `How does this page show care for ${secondTopic}?`,
+    `What feeling does this page create, and what story detail gives you that idea?`,
+    `What lesson can readers learn from ${page.title || "this page"}?`,
+  ];
+}
+
+function answerSetFor(questionText) {
+  const text = normalizeText(questionText);
+  if (text.includes("happens next")) {
+    return {
+      correctAnswerId: "b",
+      answers: [
+        { id: "a", text: "They leave the problem behind", reaction: "Good prediction. Look for the story clue that points forward." },
+        { id: "b", text: "The community responds together", reaction: "Great thinking. The story often shows people acting together." },
+        { id: "c", text: "The page becomes less important", reaction: "Nice try. The page is setting up something meaningful." },
+      ],
+    };
+  }
+  if (text.includes("feeling")) {
+    return {
+      correctAnswerId: "c",
+      answers: [
+        { id: "a", text: "It feels silly and unimportant", reaction: "Good try. Look again at the tone of the page." },
+        { id: "b", text: "It feels rushed with no detail", reaction: "Not quite. The details are doing important work here." },
+        { id: "c", text: "It feels meaningful because of the story details", reaction: "Correct. You connected the feeling to evidence." },
+      ],
+    };
+  }
+  if (text.includes("lesson")) {
+    return {
+      correctAnswerId: "a",
+      answers: [
+        { id: "a", text: "People should care for each other and the land", reaction: "Correct. That is a strong lesson from the story." },
+        { id: "b", text: "People should ignore warnings", reaction: "Try again. The story asks readers to pay attention." },
+        { id: "c", text: "Only one person matters", reaction: "Not quite. The wider community matters here." },
+      ],
+    };
+  }
+  return {
+    correctAnswerId: "a",
+    answers: [
+      { id: "a", text: "Protect and care for the people and place", reaction: "Correct. That connects well with the page." },
+      { id: "b", text: "Ignore what is happening around them", reaction: "Try again. The page points toward care and attention." },
+      { id: "c", text: "Leave the story without learning anything", reaction: "Not quite. This page gives readers something to notice." },
+    ],
+  };
+}
+
+function generatedTermsForPage(page, offlineTerms = []) {
+  const text = normalizeText(`${page.title || ""} ${page.content?.en || ""} ${page.content?.mi || ""}`);
+  const dictionaryTerms = Object.entries(dictionary)
+    .filter(([english, maori]) => text.includes(english) || text.includes(normalizeText(maori)))
+    .map(([english, maori]) => ({ term: maori, explanation: `${maori} can mean ${english}.` }));
+  const combined = [...offlineTerms, ...dictionaryTerms, ...fallbackCultureTerms];
+  const seen = new Set();
+  return combined.filter((item) => {
+    const key = normalizeText(item.term);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 6);
+}
 
 function spriteGreeting(sprite = {}, aiLine = "") {
   const mode = sprite.greetingMode || sprite.reactionMode || "ai";
@@ -571,6 +661,7 @@ function ContentTab({ book, page, updateBook, updatePage }) {
 
 function AiTab({ page, updateNested }) {
   const questions = page.ai?.questions?.length ? page.ai.questions : [defaultQuestion()];
+  const [generatingTerms, setGeneratingTerms] = useState(false);
 
   function updateQuestions(next) {
     updateNested("ai", { questions: next });
@@ -607,18 +698,43 @@ function AiTab({ page, updateNested }) {
   }
 
   function generateQuestionAndAnswers(questionId) {
+    const existingPrompts = new Set(questions
+      .filter((question) => question.id !== questionId)
+      .map((question) => normalizeText(question.prompt)));
+    const currentQuestion = questions.find((question) => question.id === questionId);
+    const keepCurrent = currentQuestion?.prompt && !existingPrompts.has(normalizeText(currentQuestion.prompt));
+    const prompt = keepCurrent
+      ? currentQuestion.prompt
+      : buildQuestionCandidates(page).find((candidate) => !existingPrompts.has(normalizeText(candidate)))
+        || `What is another important idea on this page about ${page.title}?`;
+    const generated = answerSetFor(prompt);
     updateQuestions(questions.map((question) => {
       if (question.id !== questionId) return question;
       return {
         ...question,
-        prompt: question.prompt || `What does this page teach us about ${page.title}?`,
-        answers: question.answers.map((answer, index) => ({
-          ...answer,
-          text: answer.text || [`Protect the people`, `Listen to the land`, `Work together`][index] || `Thoughtful answer`,
-          reaction: answer.reaction || `Moko says: ${index === 0 ? "Great thinking!" : "Nice try, keep exploring."}`,
-        })),
+        prompt,
+        answers: generated.answers,
+        correctAnswerId: generated.correctAnswerId,
       };
     }));
+  }
+
+  async function autoGenerateTerms() {
+    if (page.ai?.cultureTermsGenerated) return;
+    setGeneratingTerms(true);
+    try {
+      const offline = await loadOfflineAi(page.pageNumber);
+      const existing = page.ai?.cultureTerms || [];
+      const existingKeys = new Set(existing.map((item) => normalizeText(item.term)));
+      const generated = generatedTermsForPage(page, offline.terms)
+        .filter((item) => !existingKeys.has(normalizeText(item.term)));
+      updateNested("ai", {
+        cultureTerms: [...existing, ...generated].slice(0, 6),
+        cultureTermsGenerated: true,
+      });
+    } finally {
+      setGeneratingTerms(false);
+    }
   }
 
   return (
@@ -626,8 +742,12 @@ function AiTab({ page, updateNested }) {
       <section className="qa-block">
         <div className="qa-head">
           <h4>Culture Terms</h4>
-          <button onClick={() => updateTerms([...(page.ai?.cultureTerms || []), { term: "", explanation: "" }])}><Plus size={16} /> Term</button>
+          <div className="qa-actions">
+            <button disabled={page.ai?.cultureTermsGenerated || generatingTerms} onClick={autoGenerateTerms}><Sparkles size={16} /> Auto Generate Terms</button>
+            <button onClick={() => updateTerms([...(page.ai?.cultureTerms || []), { term: "", explanation: "" }])}><Plus size={16} /> Term</button>
+          </div>
         </div>
+        {page.ai?.cultureTermsGenerated && <p className="helper-note">Auto-generated terms have already been used on this page.</p>}
         {(page.ai?.cultureTerms || []).map((term, index) => (
           <div className="answer-row" key={index}>
             <label>Term<input value={term.term} onChange={(e) => updateTerms((page.ai?.cultureTerms || []).map((item, itemIndex) => itemIndex === index ? { ...item, term: e.target.value } : item))} /></label>
