@@ -16,7 +16,6 @@ import {
   Trash2,
   Upload,
   UserRound,
-  Volume2,
   X,
 } from "lucide-react";
 import {
@@ -371,7 +370,7 @@ function TeacherEditor({ book, books, setBooks, setBook, onLogout, onPreview }) 
                 transition={{ duration: 0.25 }}
               >
                 {tab === "Content" && <ContentTab book={book} page={page} updateBook={updateBook} updatePage={updatePage} />}
-                {tab === "AI & Questions" && <AiTab book={book} page={page} updateNested={updateNested} />}
+                {tab === "AI & Questions" && <AiTab page={page} updateNested={updateNested} />}
                 {tab === "Sprite Behavior" && <SpriteTab page={page} updateNested={updateNested} />}
               </motion.div>
             </AnimatePresence>
@@ -570,13 +569,8 @@ function ContentTab({ book, page, updateBook, updatePage }) {
   );
 }
 
-function AiTab({ book, page, updateNested }) {
+function AiTab({ page, updateNested }) {
   const questions = page.ai?.questions?.length ? page.ai.questions : [defaultQuestion()];
-  const [toolMode, setToolMode] = useState("preset");
-  const [preset, setPreset] = useState("question");
-  const [customPrompt, setCustomPrompt] = useState("");
-  const [contextMode, setContextMode] = useState("page");
-  const [toolOpen, setToolOpen] = useState(false);
 
   function updateQuestions(next) {
     updateNested("ai", { questions: next });
@@ -612,68 +606,23 @@ function AiTab({ book, page, updateNested }) {
     }));
   }
 
-  function generateFor(questionId, forcedPreset = preset) {
-    const context = contextMode === "book"
-      ? book.pages.map((item) => `${item.title}: ${item.content.en}`).join("\n")
-      : contextMode === "page" ? `${page.title}\n${page.content.en}` : "";
-    const prompt = toolMode === "custom" ? customPrompt : `Preset ${forcedPreset}: generate child-friendly ${forcedPreset} for ${page.title}. Context: ${context}`;
-    if (forcedPreset === "culture") {
-      updateTerms(page.ai?.cultureTerms?.length ? page.ai.cultureTerms : [
-        { term: "kaitiaki", explanation: "Guardian or caretaker." },
-        { term: "whenua", explanation: "Land, home, and place of belonging." },
-      ]);
-      return;
-    }
+  function generateQuestionAndAnswers(questionId) {
     updateQuestions(questions.map((question) => {
       if (question.id !== questionId) return question;
-      if (forcedPreset === "answers") {
-        return {
-          ...question,
-          answers: question.answers.map((answer, index) => ({
-            ...answer,
-            text: answer.text || [`Protect the people`, `Listen to the land`, `Work together`][index] || `Thoughtful answer`,
-            reaction: answer.reaction || `Moko says: ${index === 0 ? "Great thinking!" : "Nice try, keep exploring."}`,
-          })),
-        };
-      }
-      if (forcedPreset === "reaction") {
-        return {
-          ...question,
-          answers: question.answers.map((answer, index) => ({ ...answer, reaction: answer.reaction || `Reaction generated from: ${prompt.slice(0, 80)} (${index + 1})` })),
-        };
-      }
       return {
         ...question,
         prompt: question.prompt || `What does this page teach us about ${page.title}?`,
-        answers: question.answers.map((answer) => ({ ...answer, text: "", reaction: "" })),
+        answers: question.answers.map((answer, index) => ({
+          ...answer,
+          text: answer.text || [`Protect the people`, `Listen to the land`, `Work together`][index] || `Thoughtful answer`,
+          reaction: answer.reaction || `Moko says: ${index === 0 ? "Great thinking!" : "Nice try, keep exploring."}`,
+        })),
       };
     }));
   }
 
   return (
     <div className="tab-body">
-      <button className="floating-ai-button" onClick={() => setToolOpen(true)}><Sparkles size={17} /> <AiMark /> Tool</button>
-      {toolOpen && (
-        <div className="modal-backdrop">
-          <motion.section className="ai-tool-modal" initial={{ opacity: 0, y: 18, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }}>
-            <div className="modal-head">
-              <h3><AiMark /> Tool</h3>
-              <button className="icon" onClick={() => setToolOpen(false)} aria-label="Close AI tool"><X size={18} /></button>
-            </div>
-            <div className="project-fields">
-              <label>Mode<select value={toolMode} onChange={(e) => setToolMode(e.target.value)}><option value="preset">Preset module</option><option value="custom">Write prompt</option></select></label>
-              <label>Preset<select value={preset} onChange={(e) => setPreset(e.target.value)}><option value="question">Question only</option><option value="answers">Answers</option><option value="reaction">Answer reactions</option><option value="culture">Culture terms</option></select></label>
-              <label>Context<select value={contextMode} onChange={(e) => setContextMode(e.target.value)}><option value="page">Send this page</option><option value="book">Send full book</option><option value="none">Prompt only</option></select></label>
-            </div>
-            {toolMode === "custom" && <label>User Prompt<textarea rows="3" value={customPrompt} onChange={(e) => setCustomPrompt(e.target.value)} placeholder="Write what you want the AI to generate..." /></label>}
-            <p className="helper-note">Question generation creates the question only. Add answers separately or use the Answers preset.</p>
-            <div className="modal-actions">
-              <button className="outline" onClick={() => setToolOpen(false)}>Close</button>
-              <button className="primary" onClick={() => setToolOpen(false)}><Save size={17} /> Save & Close</button>
-            </div>
-          </motion.section>
-        </div>
-      )}
       <section className="qa-block">
         <div className="qa-head">
           <h4>Culture Terms</h4>
@@ -692,16 +641,15 @@ function AiTab({ book, page, updateNested }) {
           <div className="qa-head">
             <h4>Question {questionIndex + 1}</h4>
             <div className="qa-actions">
-              <button onClick={() => generateFor(question.id, "question")}><Sparkles size={16} /> Question</button>
-              <button onClick={() => generateFor(question.id, "answers")}><Sparkles size={16} /> Answers</button>
+              <button onClick={() => generateQuestionAndAnswers(question.id)}><Sparkles size={16} /> Generate Question & Answers</button>
               <button className="danger" onClick={() => deleteQuestion(question.id)}><Trash2 size={15} /> Delete</button>
             </div>
           </div>
           <label>Question<input value={question.prompt} onChange={(e) => updateQuestion(question.id, { prompt: e.target.value })} /></label>
           {question.prompt && !question.answers.some((answer) => answer.text.trim()) && (
             <div className="empty-answer-note answer-empty-action">
-              <span>No answers yet. Generate answer options before publishing this quiz.</span>
-              <button onClick={() => generateFor(question.id, "answers")}><Sparkles size={16} /> Generate Answers</button>
+              <span>No answers yet. Generate the question and answer options before publishing this quiz.</span>
+              <button onClick={() => generateQuestionAndAnswers(question.id)}><Sparkles size={16} /> Generate Question & Answers</button>
             </div>
           )}
           {question.answers.map((answer, answerIndex) => (
@@ -856,9 +804,23 @@ function StudentReader({ book, books, setBook, onLogout, onTeacher, canEdit }) {
   const [flyingStars, setFlyingStars] = useState([]);
   const [unlockedPuzzles, setUnlockedPuzzles] = useState(new Set());
   const [pendingPuzzleIndex, setPendingPuzzleIndex] = useState(null);
+  const [kiriHintReady, setKiriHintReady] = useState(false);
   const sounds = useReaderSounds();
   const page = book.pages[pageIndex];
   const publishedBooks = books.filter((item) => item.status === "published");
+
+  useEffect(() => {
+    setKiriHintReady(false);
+    const delay = 4000 + Math.random() * 2000;
+    const timer = window.setTimeout(() => {
+      setKiriHintReady(true);
+      sounds.chime();
+      const bingo = new Audio(publicUrl("bgm/bingo.mp3"));
+      bingo.volume = 0.35;
+      bingo.play().catch(() => {});
+    }, delay);
+    return () => window.clearTimeout(timer);
+  }, [page.id]);
 
   function go(next) {
     const index = Math.max(0, Math.min(book.pages.length - 1, next));
@@ -937,8 +899,16 @@ function StudentReader({ book, books, setBook, onLogout, onTeacher, canEdit }) {
         <button disabled={pageIndex === book.pages.length - 1} onClick={() => go(pageIndex + 1)}>Next <ArrowRight size={18} /></button>
       </div>
       <BgmPlayer tracks={book.bgm} />
-      <KiriSprite page={page} sprite={book.settings?.kiriSprite || "owl"} onStar={awardStars} onOpenSound={sounds.chime} onAnswerSound={(isCorrect) => (isCorrect ? sounds.correct() : sounds.wrong())} />
-      <MokoBuddy page={page} sprite={book.settings?.mokoSprite || "taniwha"} onSpeakSound={sounds.chime} />
+      <KiriSprite
+        page={page}
+        sprite={book.settings?.kiriSprite || "owl"}
+        hintReady={kiriHintReady}
+        onHintConsumed={() => setKiriHintReady(false)}
+        onStar={awardStars}
+        onOpenSound={sounds.chime}
+        onAnswerSound={(isCorrect) => (isCorrect ? sounds.correct() : sounds.wrong())}
+      />
+      <MokoBuddy page={page} sprite={book.settings?.mokoSprite || "taniwha"} />
       {pendingPuzzleIndex !== null && (
         <PuzzleGate
           page={book.pages[pendingPuzzleIndex]}
@@ -1017,20 +987,23 @@ function ProgressTracker({ visited, total, stars }) {
   );
 }
 
-function KiriSprite({ page, sprite, onStar, onOpenSound, onAnswerSound }) {
+function KiriSprite({ page, sprite, hintReady, onHintConsumed, onStar, onOpenSound, onAnswerSound }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("terms");
   const [ai, setAi] = useState(null);
+  const [viewedTerms, setViewedTerms] = useState(new Set());
   const enabled = page.sprite?.kiriEnabled !== false;
 
   useEffect(() => {
     setOpen(false);
     setAi(null);
+    setViewedTerms(new Set());
   }, [page.id]);
 
   async function openPanel(nextMode = mode) {
     setMode(nextMode);
     setOpen(true);
+    onHintConsumed?.();
     onOpenSound?.();
     if (!ai) setAi(await loadOfflineAi(page.pageNumber));
   }
@@ -1039,12 +1012,11 @@ function KiriSprite({ page, sprite, onStar, onOpenSound, onAnswerSound }) {
 
   return (
     <aside className="sprite kiri">
-      <button className={`sprite-avatar kiri-avatar ${sprite}`} onClick={() => open ? setOpen(false) : openPanel()} aria-label="Kiri sprite">
+      {hintReady && <button className="sprite-hint-badge sprite-bulb-glow" onClick={() => openPanel("quiz")} aria-label="Kiri has a question">💡</button>}
+      <button className={`sprite-avatar kiri-avatar ${sprite}`} onClick={() => open ? setOpen(false) : openPanel(hintReady ? "quiz" : mode)} aria-label="Kiri sprite">
         <SpriteFace type={sprite} />
         <span>Kiri</span>
       </button>
-      <span className="sprite-hint-badge">💡</span>
-      <span className="sprite-gear-badge">⚙</span>
       {open && (
         <div className="sprite-panel">
           <div className="sprite-tabs">
@@ -1053,9 +1025,25 @@ function KiriSprite({ page, sprite, onStar, onOpenSound, onAnswerSound }) {
           </div>
           {!ai ? <p>Thinking...</p> : mode === "terms" ? (
             <div className="term-list">
-              {(page.ai?.cultureTerms?.length ? page.ai.cultureTerms : ai.terms).map((term, index) => (
-                <button key={`${term.term}-${index}`} onClick={(event) => onStar(1, event.currentTarget)}><b>{term.term}</b><span>{term.explanation}</span></button>
-              ))}
+              {(page.ai?.cultureTerms?.length ? page.ai.cultureTerms : ai.terms).map((term, index) => {
+                const termKey = `${page.id}-${term.term}-${index}`;
+                const viewed = viewedTerms.has(termKey);
+                return (
+                  <button
+                    key={termKey}
+                    className={viewed ? "viewed" : ""}
+                    onClick={(event) => {
+                      if (viewedTerms.has(termKey)) return;
+                      setViewedTerms((current) => new Set([...current, termKey]));
+                      onStar(1, event.currentTarget);
+                    }}
+                  >
+                    <b>{term.term}</b>
+                    <span>{term.explanation}</span>
+                    {viewed && <em>Learned +1</em>}
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <Quiz page={page} ai={ai} onStar={onStar} onAnswerSound={onAnswerSound} />
@@ -1080,46 +1068,82 @@ function SpriteFace({ type }) {
 
 function Quiz({ page, ai, onStar, onAnswerSound }) {
   const [choice, setChoice] = useState("");
+  const [questionIndex, setQuestionIndex] = useState(0);
   const [awardedQuestionIds, setAwardedQuestionIds] = useState(new Set());
-  const configured = page.ai?.questions?.find((item) => item.prompt);
+  const configuredQuestions = page.ai?.questions?.filter((item) => item.prompt) || [];
+  const configured = configuredQuestions[questionIndex];
   const question = configured?.prompt || ai.question;
   const hasConfiguredAnswers = configured?.answers?.some((item) => item.text);
   const answers = configured ? configured.answers.filter((item) => item.text) : ai.answers;
   const correct = configured?.correctAnswerId || answers[0]?.id;
   const questionId = configured?.id || `offline-page-${page.id || page.pageNumber}`;
+  const selectedAnswer = answers.find((item) => item.id === choice);
+  const correctAnswer = answers.find((item) => item.id === correct);
+  const isChoiceCorrect = choice && choice === correct;
+  const hasNextQuestion = Boolean(configuredQuestions[questionIndex + 1]);
 
   useEffect(() => {
     setChoice("");
   }, [questionId]);
 
+  useEffect(() => {
+    setQuestionIndex(0);
+    setChoice("");
+  }, [page.id]);
+
   return (
     <div className="quiz">
+      {configuredQuestions.length > 1 && <span className="quiz-count">Question {questionIndex + 1} / {configuredQuestions.length}</span>}
       <h4>{question}</h4>
       {configured && !hasConfiguredAnswers && <p className="empty-answer-note">No answers have been added for this question yet.</p>}
       {answers.map((answer) => (
-        <button key={answer.id} className={choice === answer.id ? "chosen" : ""} onClick={(event) => {
-          const isCorrect = answer.id === correct;
-          setChoice(answer.id);
-          onAnswerSound?.(isCorrect);
-          if (isCorrect && !awardedQuestionIds.has(questionId)) {
-            onStar(2, event.currentTarget);
-            setAwardedQuestionIds((current) => new Set([...current, questionId]));
-          }
-          document.dispatchEvent(new CustomEvent("reader:answerResult", {
-            detail: {
-              isCorrect,
-              reaction: answer.reaction,
-              sprite: page.sprite,
-            },
-          }));
-        }}>{answer.text}</button>
+        <button
+          key={answer.id}
+          disabled={Boolean(choice)}
+          className={[
+            choice === answer.id ? "chosen" : "",
+            choice && answer.id === correct ? "correct" : "",
+            choice === answer.id && answer.id !== correct ? "wrong" : "",
+          ].filter(Boolean).join(" ")}
+          onClick={(event) => {
+            const isCorrect = answer.id === correct;
+            setChoice(answer.id);
+            onAnswerSound?.(isCorrect);
+            if (isCorrect && !awardedQuestionIds.has(questionId)) {
+              onStar(2, event.currentTarget);
+              setAwardedQuestionIds((current) => new Set([...current, questionId]));
+            }
+            document.dispatchEvent(new CustomEvent("reader:answerResult", {
+              detail: {
+                isCorrect,
+                reaction: answer.reaction,
+                sprite: page.sprite,
+              },
+            }));
+          }}
+        >
+          {choice && answer.id === correct && <strong className="answer-status">Correct</strong>}
+          {choice === answer.id && answer.id !== correct && <strong className="answer-status">Try again</strong>}
+          <span>{answer.text}</span>
+        </button>
       ))}
-      {choice && <p>{choice === correct ? "Great answer." : "Good thinking."} {answers.find((item) => item.id === choice)?.reaction || ai.feedback}</p>}
+      {choice && (
+        <div className={isChoiceCorrect ? "quiz-feedback correct" : "quiz-feedback wrong"}>
+          <strong>{isChoiceCorrect ? "Correct!" : "Not quite."}</strong>
+          <span>{selectedAnswer?.reaction || (isChoiceCorrect ? "Great thinking." : `The correct answer is: ${correctAnswer?.text || "the highlighted option"}.`)}</span>
+        </div>
+      )}
+      {choice && hasNextQuestion && (
+        <button className="primary next-question" onClick={() => {
+          setQuestionIndex((current) => current + 1);
+          setChoice("");
+        }}>Next Question</button>
+      )}
     </div>
   );
 }
 
-function MokoBuddy({ page, sprite, onSpeakSound }) {
+function MokoBuddy({ page, sprite }) {
   const [line, setLine] = useState("");
 
   useEffect(() => {
@@ -1142,18 +1166,9 @@ function MokoBuddy({ page, sprite, onSpeakSound }) {
   }, []);
 
   if (page.sprite?.mokoEnabled === false) return null;
-  function speakLine() {
-    onSpeakSound?.();
-    if (!line.trim() || typeof speechSynthesis === "undefined") return;
-    const utterance = new SpeechSynthesisUtterance(line);
-    utterance.lang = "en-NZ";
-    speechSynthesis.cancel();
-    speechSynthesis.speak(utterance);
-  }
 
   return (
     <aside className={`sprite moko ${page.sprite?.mokoEmotion || "happy"}`}>
-      <button className="moko-sound" onClick={speakLine} aria-label="Read Moko line"><Volume2 size={17} /></button>
       <div className={`sprite-avatar moko-avatar ${sprite}`}><SpriteFace type={sprite} /><span>Moko</span></div>
       <p>{line}</p>
     </aside>
