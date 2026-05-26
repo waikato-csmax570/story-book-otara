@@ -1046,6 +1046,19 @@ function BookSpread({ page, language, compact, onPrev, onNext }) {
   const isVideo = String(page.image).toLowerCase().includes(".mp4");
   const src = publicUrl(page.image);
 
+  const audioRef = useRef(null);
+  
+  function playAudio() {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (audio.paused) {
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+    }
+  }
+
   function speak(text) {
     if (!speechSynthesis || !text.trim()) return;
     const utterance = new SpeechSynthesisUtterance(text.trim());
@@ -1063,6 +1076,26 @@ function BookSpread({ page, language, compact, onPrev, onNext }) {
       <article className="book-page text-page" onClick={compact ? undefined : onNext}>
         <h2>{page.title}</h2>
         <StoryText text={content} onSpeak={speak} />
+
+        {page.pageNumber === 3 && (
+          <div style={{ marginBottom: "10px" }}>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              playAudio();
+            }}
+            className="primary"
+          >
+            ▶️ Play Audio
+          </button>
+            <audio
+              ref={audioRef}
+              src={publicUrl("audio/page3-read-aloud.m4a")}
+              preload="auto"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
       </article>
       <button className="page-turn right" onClick={onNext} aria-label="Next page" />
     </section>
