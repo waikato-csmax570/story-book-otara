@@ -2,7 +2,7 @@
   "page_number": 3,
   "image": "images/page3.webp",
   "content": {
-    "mi": "<div class='story-page'><h2>Te Whāngai i te Kaitiaki</h2><p>Ka haere ngā <i>kuia</i> o Ngāti Ngahere ki te taha o te wai me ā rātou kete iti kī tonu i te <i>kai</i>.</p><p>Ka maka māhaki rātou i te kai ki te waha o te ana.</p><div class='dialogue'><p>“Noho ora, e Te Tahi,” ka kōrero hū rātou.</p><p class='translation'>Be well, Te Tahi.</p></div><p>Ko ētahi e kī ana he koha.</p><p>Ko ētahi e kī ana he tohu whakaute.</p><p>Ā, ko ētahi e mea ana he tikanga kua mau tonu mai i ngā rā o nehe.</p></div>",
+    "mi": "<div class='story-page'><h2>Te Whāngai i te Kaitiaki</h2><br><p>Ka haere ngā <i>kuia</i> o Ngāti Ngahere ki te taha o te wai me wa rātou kete iti kī tonu i te <i>kai</i>.</p><p>Ka maka māhaki rātou i te kai ki te waha o te ana.</p><div class='dialogue'><p>“Noho ora mai, e Te Tahi,” ka kōrero hū rātou.</p></div><p>Ko ētahi e kī ana he koha.</p><p>Ko ētahi e kī ana he tohu whakaute.</p><p>Ā, ko ētahi e mea ana he tikanga kua mau tonu mai i ngā rā o nehe.</p></div>",
 
     "en": "<div class='story-page'><h2>Feeding the Guardian</h2><p>The <i>kuia</i> of Ngāti Ngahere would walk to the water’s edge carrying small baskets of <i>kai</i>.</p><p>They would toss the food gently into the cave’s mouth.</p><div class='dialogue'><p>“Noho ora, e Te Tahi,” they whispered.</p><p class='translation'>Be well, Te Tahi.</p></div><p>Some said it was a gift.</p><p>Some said it was a sign of respect.</p><p>And some said it was simply the way things had always been.</p></div>"
   },
